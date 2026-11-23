@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NEXO · IA de capacidad logística para TCC</title>
+<meta name="theme-color" content="#070b14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 2.5 35.5 11.2v17.6L20 37.5 4.5 28.8V11.2Z' fill='%23070b14' stroke='%2322d3ee' stroke-width='3'/%3E%3Ccircle cx='20' cy='20' r='6' fill='%23a78bfa'/%3E%3C/svg%3E">
+<style>:root{--bg:#070b14;--bg2:#0c1322;--card:#111a2e;--card2:#16223b;--line:#22314f;--tx:#e6edf7;--mut:#8a9bb8;--acc:#22d3ee;--acc2:#a78bfa;--ok:#34d399;--warn:#fbbf24;--bad:#f43f5e;--red:#ff3b5c;--gold:#f5b942}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 80% -10%,#12305044,transparent),radial-gradient(900px 500px at -10% 110%,#2a1b5544,transparent),var(--bg)}
+button{font:inherit;cursor:pointer;border:0;color:inherit;background:none}
+input,select{font:inherit;color:var(--tx);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;outline:none}
+input:focus,select:focus{border-color:var(--acc)}
+label{font-size:12px;color:var(--mut);display:block;margin:0 0 5px}
+.hidden{display:none!important}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.mut{color:var(--mut)}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.acc{color:var(--acc)}
+.btn{background:linear-gradient(135deg,#0891b2,#7c3aed);padding:11px 16px;border-radius:12px;font-weight:700;letter-spacing:.2px;box-shadow:0 6px 20px #22d3ee22}
+.btn:hover{filter:brightness(1.12)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn2{background:var(--card2);border:1px solid var(--line);padding:9px 13px;border-radius:10px;font-weight:600}
+.btn2:hover{border-color:var(--acc)}
+.btn-star{background:linear-gradient(135deg,#f59e0b,#ef4444);padding:9px 14px;border-radius:12px;font-weight:800;box-shadow:0 0 0 0 #f59e0b88;animation:glow 2.2s infinite}
+@keyframes glow{0%{box-shadow:0 0 0 0 #f59e0b77}70%{box-shadow:0 0 0 12px #f59e0b00}100%{box-shadow:0 0 0 0 #f59e0b00}}
+.card{background:linear-gradient(180deg,var(--card),#0e1628);border:1px solid var(--line);border-radius:16px;padding:16px}
+.card h3{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;background:#ffffff10;border:1px solid #ffffff18}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.live{background:var(--ok);box-shadow:0 0 10px var(--ok);animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.35}}
+/* topbar */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 16px;background:#070b14cc;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;letter-spacing:3px}
+.logo .mk{width:34px;height:34px}
+.top .sp{flex:1}
+.clock{font-weight:800;font-size:15px}
+/* login */
+.login{max-width:980px;margin:0 auto;padding:40px 18px;text-align:center}
+.hero-logo{width:96px;height:96px;margin:0 auto 10px}
+.login h1{font-size:54px;letter-spacing:12px;font-weight:900;background:linear-gradient(90deg,#22d3ee,#a78bfa,#f5b942);-webkit-background-clip:text;background-clip:text;color:transparent}
+.login .tag{font-size:16px;color:#c7d2e6;margin:6px 0 4px}
+.login .who{margin:18px 0 28px;color:var(--mut);line-height:1.6}
+.login .who b{color:var(--tx);font-size:16px}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.role{padding:22px 16px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(180deg,#121c33,#0d1527);text-align:center;transition:.2s}
+.role:hover{transform:translateY(-3px);border-color:var(--acc)}
+.role .ic{font-size:38px;margin-bottom:8px}.role b{display:block;font-size:17px;margin-bottom:4px}.role span{font-size:12px;color:var(--mut)}
+.namebox{max-width:420px;margin:24px auto 0;text-align:left}
+.facts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.facts .pill{font-size:12px;padding:6px 12px;font-weight:600}
+/* layout */
+.wrap{padding:14px;max-width:1700px;margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px}
+.kpi small{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.8px}
+.kpi b{display:block;font-size:22px;font-weight:800;margin-top:3px}
+.kpi i{font-style:normal;font-size:11px;color:var(--mut)}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.tab{padding:8px 13px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-weight:700;font-size:13px}
+.tab.on{background:linear-gradient(135deg,#0e7490,#6d28d9);border-color:transparent}
+/* map */
+.mapcard{position:relative;padding:0;overflow:hidden}
+.maphead{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:8px;z-index:2;align-items:center;flex-wrap:wrap}
+#map{width:100%;height:640px;display:block;background:radial-gradient(circle at 50% 40%,#0f2140,#070b14 70%)}
+.legend{position:absolute;bottom:10px;left:12px;font-size:11px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap;background:#070b14bb;padding:6px 10px;border-radius:10px}
+.side-ant{position:absolute;right:10px;top:56px;width:270px;max-height:560px;overflow:auto;background:#070b14dd;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:12px}
+.side-ant .it{padding:7px 6px;border-bottom:1px solid #ffffff0d;cursor:pointer;border-radius:8px}
+.side-ant .it:hover{background:#ffffff0a}
+.pulse{animation:pulse 1.6s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes pulse{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(3.2)}}
+/* brain */
+.brain{display:flex;flex-direction:column;height:640px}
+.brain .head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.orb{width:58px;height:58px;flex:none;border-radius:50%;background:radial-gradient(circle at 35% 30%,#a5f3fc,#22d3ee 30%,#7c3aed 70%,#1e1b4b);box-shadow:0 0 30px #22d3ee66,0 0 60px #7c3aed44;animation:think 2.4s ease-in-out infinite;position:relative}
+.orb:after{content:"";position:absolute;inset:-7px;border-radius:50%;border:2px dashed #22d3ee55;animation:spin 9s linear infinite}
+@keyframes think{50%{transform:scale(1.07);filter:hue-rotate(25deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.feed{flex:1;overflow:hidden;font-size:12.5px;line-height:1.45;display:flex;flex-direction:column;gap:5px;mask-image:linear-gradient(180deg,#000 75%,transparent)}
+.ln{padding:7px 9px;border-radius:9px;background:#ffffff06;border-left:3px solid var(--acc);animation:in .45s ease}
+.ln .t{color:var(--mut);font-size:10.5px;margin-right:6px}
+.ln.c2{border-color:var(--acc2)}.ln.c3{border-color:var(--gold)}.ln.c4{border-color:var(--ok)}.ln.c5{border-color:var(--red)}
+.ln.click{cursor:pointer}.ln.click:hover{background:#ffffff10}
+@keyframes in{from{opacity:0;transform:translateY(-6px)}}
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.6px;padding:7px 8px;border-bottom:1px solid var(--line)}
+td{padding:8px;border-bottom:1px solid #ffffff0a}
+tr.click{cursor:pointer}tr.click:hover td{background:#ffffff07}
+.st{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.s0{background:#f43f5e22;color:#fb7185}.s1{background:#a78bfa22;color:#c4b5fd}.s2{background:#fbbf2422;color:#fcd34d}.s3{background:#22d3ee22;color:#67e8f9}.s4{background:#60a5fa22;color:#93c5fd}.s5{background:#34d39922;color:#6ee7b7}.s6{background:#ffffff14;color:#cbd5e1}
+/* bars */
+.bar{height:10px;border-radius:99px;background:#ffffff10;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.capday{display:grid;grid-template-columns:70px 1fr 120px;gap:10px;align-items:center;padding:6px 0;font-size:12px}
+.f-base{background:#475569}.f-own{background:#22d3ee}.f-x{background:#a78bfa}.f-ext{background:#f5b942}.f-ads{background:#fb7185}
+/* forms */
+.frm{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.frm .full{grid-column:1/-1}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;cursor:pointer;background:var(--bg2)}
+.opt input{width:auto;margin-top:3px}
+.opt.on{border-color:var(--acc);background:#22d3ee0d}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:600;background:var(--bg2)}
+.chip.on{background:#22d3ee22;border-color:var(--acc);color:#a5f3fc}
+.verdict{padding:16px;border-radius:14px;margin-bottom:12px;display:flex;gap:14px;align-items:center}
+.verdict .big{font-size:34px}
+.v-ok{background:#34d39914;border:1px solid #34d39955}.v-mid{background:#fbbf2414;border:1px solid #fbbf2455}.v-no{background:#f43f5e14;border:1px solid #f43f5e55}
+.note{font-size:12.5px;padding:8px 10px;border-radius:10px;background:#ffffff07;margin-bottom:6px;line-height:1.45}
+.reco{border:1px dashed var(--gold);background:#f5b9420d;border-radius:12px;padding:12px;margin:10px 0}
+.price{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+.price div{background:var(--bg2);border-radius:10px;padding:10px}.price small{color:var(--mut);font-size:11px}.price b{display:block;font-size:17px}
+/* order cards */
+.oc{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;background:var(--bg2)}
+.oc .row{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.steps{display:flex;gap:4px;margin:10px 0}
+.steps i{flex:1;height:6px;border-radius:9px;background:#ffffff12}
+.steps i.d{background:var(--ok)}.steps i.c{background:var(--acc);animation:blink 1s infinite}
+.auto{font-size:12px;color:#b6c4dc;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;margin-top:6px}
+/* modal */
+.modal{position:fixed;inset:0;background:#000b;z-index:50;display:flex;align-items:center;justify-content:center;padding:14px}
+.mbox{background:#0b1222;border:1px solid var(--line);border-radius:18px;width:min(1250px,100%);max-height:94vh;overflow:auto;padding:18px;box-shadow:0 30px 80px #000}
+.pipe{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap}
+.pipe div{flex:1;min-width:110px;padding:10px;border-radius:12px;background:#ffffff08;border:1px solid var(--line);font-size:12px;text-align:center;opacity:.55}
+.pipe div.d{opacity:1;border-color:#34d39966;background:#34d39912}
+.pipe div.c{opacity:1;border-color:var(--acc);background:#22d3ee18;box-shadow:0 0 18px #22d3ee33}
+.pipe div b{display:block;font-size:18px;margin-bottom:3px}
+.mgrid{display:grid;grid-template-columns:1.1fr 1fr;gap:14px}
+.typing:after{content:"▋";animation:blink 1s infinite;color:var(--acc)}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#0f1a30;border:1px solid var(--acc);padding:12px 18px;border-radius:12px;z-index:60;font-weight:600;box-shadow:0 10px 30px #000;max-width:92vw}
+.qr{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center}
+.qr img{width:100%;max-width:190px;background:#fff;padding:8px;border-radius:12px}
+.scanbox{height:300px;overflow:hidden;font-size:12px;display:flex;flex-direction:column;gap:4px}
+.scan{display:flex;gap:10px;align-items:center;padding:6px 8px;background:#ffffff07;border-radius:8px;animation:in .3s}
+.qrmini{width:26px;height:26px;flex:none;background:#fff;border-radius:3px;padding:2px;display:grid;grid-template-columns:repeat(5,1fr);gap:1px}
+.qrmini i{background:#000}.qrmini i.w{background:#fff}
+.laser{height:3px;background:linear-gradient(90deg,transparent,#f43f5e,transparent);box-shadow:0 0 12px #f43f5e;animation:laser 1.2s ease-in-out infinite alternate;margin:8px 0}
+@keyframes laser{from{transform:translateX(-30%)}to{transform:translateX(30%)}}
+.src a{color:var(--acc);text-decoration:none}
+.fact{padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}
+.fact b{font-size:22px;display:block}
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.est{font-size:10px;color:var(--warn);font-weight:700;letter-spacing:.5px}
+.plat{display:grid;grid-template-columns:120px 1fr 70px;gap:10px;align-items:center;padding:6px 0}
+@media (max-width:1000px){.grid2,.mgrid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}#map,.brain{height:470px}.fgrid{grid-template-columns:1fr 1fr}.side-ant{display:none}}
+@media (max-width:640px){.roles{grid-template-columns:1fr}.login h1{font-size:40px}.frm{grid-template-columns:1fr}.price{grid-template-columns:1fr 1fr}.auto{grid-template-columns:1fr}.qr{grid-template-columns:1fr}.capday{grid-template-columns:56px 1fr 92px}}
+</style></head>
+<body><div id="app"></div>
+<script>
+/* ===================== NEXO · DATOS ===================== */
+const FB = 'https://nexo-tcc-default-rtdb.firebaseio.com/nexo';
+const PROJ = { lon0: -79.5, lat1: 12.8, sx: 76.92307692307692 };
+const P = (lat, lon) => [(lon - PROJ.lon0) * PROJ.sx, (PROJ.lat1 - lat) * PROJ.sx];
+
+// Datos reales públicos de TCC (con fuente) — se muestran en la pestaña "Datos TCC"
+const TCC_REAL = [
+  { v: '13,81 M', t: 'paquetes movilizados en un año', s: 'Semana – Empresas que Construyen País', u: 'https://www.semana.com/hablan-las-marcas/articulo/la-empresa-de-logistica-que-conecta-al-pais-a-traves-de-servicios-amigables-con-el-medioambiente/202346/' },
+  { v: '3,8 M', t: 'unidades de mensajería al año', s: 'Semana', u: 'https://www.semana.com/hablan-las-marcas/articulo/la-empresa-de-logistica-que-conecta-al-pais-a-traves-de-servicios-amigables-con-el-medioambiente/202346/' },
+  { v: '388.571 t', t: 'de carga masiva al año', s: 'Semana', u: 'https://www.semana.com/hablan-las-marcas/articulo/la-empresa-de-logistica-que-conecta-al-pais-a-traves-de-servicios-amigables-con-el-medioambiente/202346/' },
+  { v: '3.000+', t: 'vehículos entre propios, terceros y aliados', s: 'Semana – 5.000 Empresas', u: 'https://www.semana.com/empresas/articulo/el-auge-del-comercio-electronico/300234' },
+  { v: '3.300–4.500', t: 'colaboradores según la temporada', s: 'Semana – 5.000 Empresas', u: 'https://www.semana.com/empresas/articulo/el-auge-del-comercio-electronico/300234' },
+  { v: '~100', t: 'vehículos eléctricos (meta cierre 2024)', s: 'La República – Diego Mantilla', u: 'https://www.larepublica.co/empresas/entrevista-con-diego-mantilla-presidente-de-tcc-sobre-la-actualidad-de-la-compania-y-los-proyectos-a-futuro-3969504' },
+  { v: '240.000 m²', t: 'para almacenamiento, crossdocking y transporte', s: 'La República', u: 'https://www.larepublica.co/especiales/especial-zonas-francas/grupo-logistico-tcc-tiene-170-puntos-para-ejecutar-todos-sus-procesos-2783799' },
+  { v: '~170', t: 'puntos de operación en el país', s: 'La República', u: 'https://www.larepublica.co/especiales/especial-zonas-francas/grupo-logistico-tcc-tiene-170-puntos-para-ejecutar-todos-sus-procesos-2783799' },
+  { v: '200+', t: 'agencias · entregas 24, 48 y 72 h', s: 'Tarifario TCC', u: 'https://res.cloudinary.com/awesomeimages/image/upload/v1567202958/tarifario/TARIFARIO_TCC.pdf' },
+  { v: '20', t: 'camiones eléctricos Foton (Bogotá, Medellín, B/quilla, Cartagena)', s: 'Portafolio', u: 'https://www.portafolio.co/negocios/vehiculo/tcc-recibe-20-camiones-electricos-de-foton-622756' },
+  { v: '46', t: 'tractocamiones renovados para ruta nacional', s: 'Portafolio', u: 'https://www.portafolio.co/contenido-patrocinado/tcc-presenta-su-nueva-flota-de-vehiculos-de-ruta-nacional-574984' },
+  { v: '15.000/día', t: 'referencia: CEDI de Mercado Libre en Medellín', s: 'Forbes Colombia', u: 'https://forbes.co/negocios/mercado-libre-inaugura-un-centro-de-distribucion-en-medellin-que-despachara-15-000-paquetes-diarios' },
+];
+
+// Supuestos estimados (no públicos) — siempre marcados como ESTIMADO
+const ESTIMADOS = [
+  '≈ 45.000 paquetes por día hábil a nivel nacional (13,81 M ÷ ~300 días).',
+  'Capacidad de última milla por ciudad repartida según peso económico de cada ciudad.',
+  'Flota simulada (Medellín): 38 furgones NHR (180 paq/turno), 22 eléctricos (120), 60 motos (25), 9 tractomulas.',
+  'Tarifas B2B simuladas: urbana $7.900, regional $10.900, nacional $15.900 por paquete (+$850 por kg sobre 3 kg).',
+  'Mensajero externo: pago por ruta de $165.000 (≈30 paquetes), aceptación 35 % de la bolsa en 2–3 h.',
+  'Fondo de emergencia de publicidad: $15.000.000/mes · cada $1.000.000 en Meta/WhatsApp ≈ 45 postulantes.',
+  'Costo coordinador logístico: $14.500/hora (para calcular horas humanas ahorradas).',
+];
+
+// Hubs / bodegas (capacidad diaria de última milla: ESTIMADO)
+const CITIES = {
+  MED: { n: 'Medellín', lat: 6.25, lon: -75.57, cap: 9800, dep: 'ANT', hub: 'Hub Medellín · Itagüí (principal)' },
+  BOG: { n: 'Bogotá', lat: 4.71, lon: -74.07, cap: 14500, dep: 'CUN', hub: 'Hub Bogotá · Fontibón' },
+  CAL: { n: 'Cali', lat: 3.45, lon: -76.53, cap: 6200, dep: 'VAL', hub: 'Hub Cali · Acopi Yumbo' },
+  BAQ: { n: 'Barranquilla', lat: 10.96, lon: -74.8, cap: 4800, dep: 'ATL', hub: 'Hub Barranquilla' },
+  CTG: { n: 'Cartagena', lat: 10.39, lon: -75.51, cap: 3200, dep: 'BOL', hub: 'Bodega Cartagena · Mamonal' },
+  BGA: { n: 'Bucaramanga', lat: 7.12, lon: -73.12, cap: 3000, dep: 'SAN', hub: 'Bodega Bucaramanga' },
+  PEI: { n: 'Pereira', lat: 4.81, lon: -75.69, cap: 2200, dep: 'RIS', hub: 'Bodega Pereira' },
+  MZL: { n: 'Manizales', lat: 5.07, lon: -75.52, cap: 1600, dep: 'CAL', hub: 'Bodega Manizales' },
+  ARM: { n: 'Armenia', lat: 4.53, lon: -75.68, cap: 1200, dep: 'QUI', hub: 'Bodega Armenia' },
+  CUC: { n: 'Cúcuta', lat: 7.89, lon: -72.5, cap: 2000, dep: 'NSA', hub: 'Bodega Cúcuta' },
+  IBE: { n: 'Ibagué', lat: 4.44, lon: -75.23, cap: 1500, dep: 'TOL', hub: 'Bodega Ibagué' },
+  VVC: { n: 'Villavicencio', lat: 4.14, lon: -73.63, cap: 1400, dep: 'MET', hub: 'Bodega Villavicencio' },
+  SMR: { n: 'Santa Marta', lat: 11.24, lon: -74.2, cap: 1500, dep: 'MAG', hub: 'Bodega Santa Marta' },
+  MTR: { n: 'Montería', lat: 8.75, lon: -75.88, cap: 1300, dep: 'COR', hub: 'Bodega Montería' },
+  VUP: { n: 'Valledupar', lat: 10.46, lon: -73.25, cap: 1000, dep: 'CES', hub: 'Bodega Valledupar' },
+  NVA: { n: 'Neiva', lat: 2.93, lon: -75.28, cap: 1100, dep: 'HUI', hub: 'Bodega Neiva' },
+  PPN: { n: 'Popayán', lat: 2.44, lon: -76.61, cap: 900, dep: 'CAU', hub: 'Bodega Popayán' },
+  PSO: { n: 'Pasto', lat: 1.21, lon: -77.28, cap: 1100, dep: 'NAR', hub: 'Bodega Pasto' },
+  BUN: { n: 'Buenaventura', lat: 3.88, lon: -77.03, cap: 900, dep: 'VAL', hub: 'Puerto de Buenaventura', port: true },
+  APO: { n: 'Apartadó', lat: 7.88, lon: -76.63, cap: 700, dep: 'ANT', hub: 'Bodega Urabá · Apartadó' },
+};
+
+// Municipios de Antioquia (se atienden desde un hub)
+const MUNIS = {
+  m_MED: { n: 'Medellín', lat: 6.25, lon: -75.57, hub: 'MED' },
+  m_BEL: { n: 'Bello', lat: 6.335, lon: -75.555, hub: 'MED' },
+  m_ITA: { n: 'Itagüí', lat: 6.172, lon: -75.611, hub: 'MED' },
+  m_ENV: { n: 'Envigado', lat: 6.17, lon: -75.585, hub: 'MED' },
+  m_SAB: { n: 'Sabaneta', lat: 6.151, lon: -75.616, hub: 'MED' },
+  m_EST: { n: 'La Estrella', lat: 6.158, lon: -75.643, hub: 'MED' },
+  m_CAL: { n: 'Caldas', lat: 6.091, lon: -75.636, hub: 'MED' },
+  m_COP: { n: 'Copacabana', lat: 6.349, lon: -75.508, hub: 'MED' },
+  m_GIR: { n: 'Girardota', lat: 6.377, lon: -75.445, hub: 'MED' },
+  m_BAR: { n: 'Barbosa', lat: 6.438, lon: -75.331, hub: 'MED' },
+  m_RIO: { n: 'Rionegro', lat: 6.155, lon: -75.374, hub: 'MED' },
+  m_MAR: { n: 'Marinilla', lat: 6.174, lon: -75.336, hub: 'MED' },
+  m_GUA: { n: 'Guarne', lat: 6.28, lon: -75.443, hub: 'MED' },
+  m_CEJ: { n: 'La Ceja', lat: 6.031, lon: -75.43, hub: 'MED' },
+  m_CVI: { n: 'El Carmen de Viboral', lat: 6.083, lon: -75.335, hub: 'MED' },
+  m_SFA: { n: 'Santa Fe de Antioquia', lat: 6.556, lon: -75.828, hub: 'MED' },
+  m_YAR: { n: 'Yarumal', lat: 6.963, lon: -75.418, hub: 'MED' },
+  m_AND: { n: 'Andes', lat: 5.657, lon: -75.879, hub: 'MED' },
+  m_SON: { n: 'Sonsón', lat: 5.712, lon: -75.311, hub: 'MED' },
+  m_PBE: { n: 'Puerto Berrío', lat: 6.49, lon: -74.403, hub: 'MED' },
+  m_CAU: { n: 'Caucasia', lat: 7.986, lon: -75.198, hub: 'MED' },
+  m_APA: { n: 'Apartadó', lat: 7.883, lon: -76.625, hub: 'APO' },
+  m_TUR: { n: 'Turbo', lat: 8.093, lon: -76.728, hub: 'APO' },
+};
+const PLACE = k => CITIES[k] || MUNIS[k];
+const hubOf = k => (CITIES[k] ? k : (MUNIS[k] ? MUNIS[k].hub : 'MED'));
+const depOf = k => (CITIES[k] ? CITIES[k].dep : 'ANT');
+
+// Asesores comerciales simulados
+const ASESORES = ['Laura Gómez', 'Andrés Restrepo', 'Valentina Ríos', 'Camilo Henao', 'Daniela Vélez', 'Juan Pablo Arango', 'Sara Muñoz', 'Mateo Zapata', 'Natalia Ospina', 'Sebastián Cardona', 'Mariana Toro', 'Felipe Londoño', 'Isabela Mejía', 'Tomás Correa'];
+// Clientes simulados (nombres inventados) con producto típico
+const CLIENTES = [
+  { c: 'Confecciones Itagüí Uniformes S.A.S.', p: 'Telas para uniformes escolares', s: 'Textil', o: 'm_ITA' },
+  { c: 'Textiles Aburrá', p: 'Rollos de tela índigo', s: 'Textil', o: 'MED' },
+  { c: 'Calzado Sabaneta', p: 'Cajas de calzado', s: 'Moda', o: 'm_SAB' },
+  { c: 'Farmacéutica Andina', p: 'Medicamentos OTC', s: 'Salud', o: 'BOG' },
+  { c: 'ElectroHogar Colombia', p: 'Electrodomésticos pequeños', s: 'Retail', o: 'BOG' },
+  { c: 'Agroinsumos del Oriente', p: 'Fertilizante en bolsa', s: 'Agro', o: 'm_RIO' },
+  { c: 'Café Origen Antioquia', p: 'Café tostado empacado', s: 'Alimentos', o: 'm_AND' },
+  { c: 'Ferretería Industrial Bello', p: 'Herramienta y tornillería', s: 'Industrial', o: 'm_BEL' },
+  { c: 'Cosméticos Bella Piel', p: 'Kits de cosmética', s: 'Belleza', o: 'CAL' },
+  { c: 'Repuestos Moto Express', p: 'Repuestos de moto', s: 'Automotriz', o: 'MED' },
+  { c: 'Editorial Escolar Andes', p: 'Textos escolares', s: 'Educación', o: 'BOG' },
+  { c: 'Lácteos del Norte', p: 'Insumos de empaque', s: 'Alimentos', o: 'm_YAR' },
+  { c: 'Mueblería Rionegro', p: 'Muebles RTA', s: 'Hogar', o: 'm_RIO' },
+  { c: 'Tecno Partes Caribe', p: 'Accesorios de celular', s: 'Tecnología', o: 'BAQ' },
+  { c: 'Distribuidora La 80', p: 'Abarrotes surtidos', s: 'Consumo', o: 'MED' },
+  { c: 'Importadora Pacífico', p: 'Contenedor de mercancía importada', s: 'Comercio exterior', o: 'BUN' },
+  { c: 'Floricultores de La Ceja', p: 'Material de empaque floral', s: 'Agro', o: 'm_CEJ' },
+  { c: 'Bananeras de Urabá', p: 'Insumos de cosecha', s: 'Agro', o: 'APO' },
+];
+const PLATAFORMAS = [
+  { k: 'Mercado Libre', w: 36, c: '#facc15' }, { k: 'Temu', w: 21, c: '#fb923c' }, { k: 'Shopify', w: 16, c: '#4ade80' },
+  { k: 'Falabella', w: 9, c: '#a3e635' }, { k: 'Amazon', w: 8, c: '#38bdf8' }, { k: 'Instagram / WhatsApp', w: 10, c: '#f472b6' },
+];
+const STAGES = ['Negociación', 'Reservada', 'Recolección', 'Tránsito', 'Clasificación', 'Reparto', 'Entregada'];
+const STAGE_IC = ['🤝', '📌', '🏭', '🚛', '📦', '🛵', '🏁'];
+const BASE_DUR = [6, 10, 22, 40, 22, 50]; // segundos (simulación acelerada)
+const RULES = { ownCut: 13, xtraCut: 16, extCut: 16.5, adsCut: 14, open: 6, close: 20, extLead: '2–3 h', adsLead: '4–6 h' };
+const FIN = { U: 7900, R: 10900, N: 15900, kg: 850, ownCost: 0.58, xtraCost: 1.3, route: 165000, perRoute: 30, platFee: 0.06, kmTruck: 7800, adm: 0.09, fund: 15000000, adsPer: 1000000, adsHires: 45, accept: 0.35, coordH: 14500 };
+
+const GEO={"Colombia":"M629,72L627,73L623,75L613,79L599,83L580,87L576,92L558,123L543,130L537,134L533,140L524,151L520,159L510,178L504,200L503,213L499,232L495,241L489,250L483,258L477,268L473,275L472,277L474,279L485,277L489,275L496,272L499,274L503,282L507,283L511,282L516,284L521,304L526,321L537,332L545,340L547,347L549,357L549,363L547,366L543,372L542,384L541,388L540,399L541,406L543,411L547,414L554,416L561,418L565,427L570,439L576,444L585,447L591,446L606,444L619,444L637,447L644,447L653,447L668,440L674,439L680,440L689,443L695,446L701,448L710,450L716,450L721,450L723,451L738,469L751,485L762,498L774,513L775,514L780,512L784,513L787,515L793,514L801,509L812,508L828,511L848,511L874,508L889,504L895,501L906,501L918,504L925,509L925,514L928,521L925,528L917,536L913,545L912,557L908,566L901,571L898,579L900,590L899,605L896,626L896,638L899,642L900,648L900,655L901,662L905,670L911,687L915,695L919,697L923,701L935,718L938,722L937,725L936,728L934,729L922,739L897,762L895,765L895,770L903,767L910,769L914,770L916,772L918,778L920,779L924,781L931,788L938,795L942,798L945,801L946,805L945,810L949,820L951,823L953,827L951,831L955,835L958,844L962,855L963,861L965,864L967,872L971,880L970,885L971,891L956,894L955,893L954,891L955,877L955,860L952,854L946,843L937,828L935,824L931,822L926,822L923,822L919,825L915,828L907,837L899,847L894,849L890,850L886,850L882,847L879,842L875,834L870,832L868,834L866,838L865,843L868,848L871,852L866,852L851,852L832,852L814,852L798,852L783,852L777,852L771,849L766,848L763,848L758,851L751,851L746,853L742,853L742,866L742,884L742,903L746,902L750,902L753,903L760,902L764,903L768,903L771,903L774,905L777,904L780,903L784,904L788,906L791,911L793,916L795,918L795,923L795,927L794,930L795,932L796,934L796,935L794,936L791,936L788,936L786,936L784,934L782,934L780,934L778,933L775,931L771,928L767,930L764,931L761,932L759,934L756,933L752,935L750,936L746,938L742,939L737,939L732,940L727,940L726,950L726,970L725,983L725,995L727,1000L737,1009L744,1014L750,1019L756,1022L759,1024L761,1027L761,1031L762,1034L761,1037L760,1040L761,1043L763,1046L763,1049L765,1052L766,1055L768,1057L770,1059L773,1061L774,1064L773,1067L773,1069L776,1073L777,1077L776,1080L774,1094L771,1109L769,1121L765,1140L761,1163L756,1190L751,1217L746,1243L742,1266L738,1292L735,1308L733,1310L729,1305L723,1299L718,1296L715,1292L712,1283L708,1280L705,1278L702,1278L698,1281L693,1282L690,1282L676,1276L674,1276L683,1262L699,1238L709,1222L719,1205L725,1196L726,1195L726,1192L723,1189L718,1188L712,1185L708,1181L703,1179L699,1176L691,1173L686,1171L681,1170L676,1165L660,1155L656,1154L652,1156L645,1157L639,1163L631,1164L623,1164L619,1161L616,1160L611,1156L602,1152L596,1150L592,1151L587,1156L582,1161L578,1164L573,1163L566,1168L560,1169L554,1170L547,1171L539,1169L532,1167L529,1166L526,1166L522,1169L514,1170L509,1170L504,1169L501,1165L495,1162L488,1160L487,1154L488,1150L490,1145L489,1139L486,1129L485,1125L483,1122L480,1121L473,1122L466,1118L462,1115L460,1111L462,1103L460,1096L456,1092L453,1086L449,1081L444,1078L438,1078L434,1077L429,1071L424,1069L419,1064L409,1061L404,1059L401,1056L397,1050L398,1047L396,1044L394,1038L391,1029L387,1024L383,1021L380,1018L376,1013L370,1010L365,1008L363,1003L361,1000L359,1000L355,1000L350,999L346,997L342,994L336,988L332,988L329,988L324,993L310,988L299,980L287,978L278,973L271,966L267,961L264,958L248,951L245,950L239,953L237,955L237,961L236,965L231,967L223,966L217,964L213,964L212,965L210,966L205,966L198,964L192,962L183,957L180,958L170,957L162,954L160,952L156,936L155,934L152,934L146,932L143,929L141,924L138,920L128,921L113,916L102,910L91,904L76,892L70,889L63,886L59,880L52,874L49,873L47,867L36,860L42,850L54,842L71,848L73,837L67,826L68,807L70,803L74,798L80,795L83,794L89,795L93,791L106,793L110,792L113,789L116,787L121,782L123,777L125,775L130,776L130,773L133,770L141,763L141,760L138,753L139,751L144,750L149,748L152,742L156,736L160,728L165,727L167,717L174,709L186,684L183,684L180,688L176,687L172,685L173,674L171,672L165,681L159,672L159,667L161,662L161,658L152,661L153,657L158,654L161,650L165,646L167,640L168,631L170,621L169,617L166,612L164,594L165,583L164,575L161,568L151,559L167,548L173,540L166,523L156,509L156,501L159,502L162,502L165,484L164,479L159,470L152,470L146,459L143,456L140,449L131,436L123,429L129,412L133,409L135,405L133,395L134,392L135,391L136,392L138,393L142,397L145,403L147,404L151,403L165,392L164,389L166,382L170,376L176,374L177,371L176,367L170,355L166,349L163,342L161,336L156,331L158,326L162,320L164,319L166,320L172,331L182,338L193,350L197,358L201,359L204,362L202,364L199,367L198,371L200,374L203,375L209,374L212,369L210,345L206,333L202,330L198,325L201,322L208,320L216,316L248,293L259,272L267,264L277,259L288,260L297,258L300,251L297,242L294,236L297,228L301,216L300,206L305,200L303,197L297,202L292,204L295,200L304,190L308,175L312,168L324,159L327,155L337,148L352,134L358,130L388,139L398,139L396,140L391,141L385,144L383,149L388,155L392,156L396,153L400,142L406,130L408,118L412,114L419,112L430,115L439,117L448,118L476,116L521,84L543,77L556,70L564,57L566,47L573,43L579,43L582,41L583,38L599,29L608,28L616,28L634,36L642,49L643,58L632,68L629,72ZM107,789L105,791L101,788L99,784L102,781L105,782L106,784L107,789Z","Venezuela":"M1204,128L1206,138L1206,140L1199,147L1193,148L1188,147L1185,146L1180,142L1175,143L1164,141L1161,140L1165,134L1173,132L1176,132L1178,135L1184,138L1190,138L1192,133L1201,126L1204,128ZM1099,146L1095,147L1087,146L1084,143L1086,140L1092,140L1098,144L1099,146ZM1499,327L1513,346L1513,348L1512,350L1503,355L1501,357L1498,365L1486,370L1479,375L1473,380L1471,382L1460,384L1457,387L1453,396L1450,400L1445,405L1445,408L1452,418L1453,421L1451,426L1451,430L1455,434L1460,435L1464,433L1470,433L1473,435L1475,436L1475,439L1473,446L1470,450L1455,457L1448,461L1445,464L1437,462L1433,463L1430,465L1428,467L1422,467L1415,468L1412,470L1409,473L1408,478L1409,484L1411,489L1411,493L1413,507L1411,510L1406,513L1400,519L1393,528L1394,530L1410,548L1427,566L1443,584L1445,585L1448,587L1451,594L1453,600L1453,604L1452,608L1448,613L1443,617L1436,621L1430,624L1426,633L1423,636L1420,637L1415,638L1407,638L1401,637L1395,644L1386,646L1380,655L1360,662L1340,667L1334,669L1314,665L1310,666L1304,670L1299,674L1295,674L1291,676L1289,682L1287,702L1280,708L1272,708L1266,701L1259,696L1247,683L1243,681L1240,681L1229,685L1223,683L1219,681L1212,682L1199,682L1191,682L1187,679L1183,672L1180,669L1177,667L1173,666L1152,666L1148,666L1145,665L1141,659L1137,656L1132,656L1129,659L1138,670L1141,676L1149,685L1171,703L1175,709L1175,716L1175,727L1175,738L1181,753L1189,769L1192,779L1190,786L1188,790L1189,792L1190,794L1198,796L1214,797L1224,797L1239,799L1241,805L1239,814L1236,819L1234,820L1225,822L1217,827L1204,833L1197,833L1194,834L1192,836L1190,838L1187,848L1183,860L1177,867L1169,873L1161,873L1155,873L1152,875L1147,879L1141,885L1136,888L1129,888L1122,891L1113,895L1107,899L1102,906L1095,913L1088,918L1084,924L1079,931L1073,932L1072,927L1075,920L1072,913L1066,910L1063,909L1060,909L1053,912L1044,918L1039,922L1034,924L1024,926L1015,927L1012,926L1005,921L991,908L971,891L970,885L971,880L967,872L965,864L963,861L962,855L958,844L955,835L951,831L953,827L951,823L949,820L945,810L946,805L945,801L942,798L938,795L931,788L924,781L920,779L918,778L916,772L914,770L910,769L903,767L895,770L895,765L897,762L922,739L934,729L936,728L937,725L938,722L935,718L923,701L919,697L915,695L911,687L905,670L901,662L900,655L900,648L899,642L896,638L896,626L899,605L900,590L898,579L901,571L908,566L912,557L913,545L917,536L925,528L928,521L925,514L925,509L918,504L906,501L895,501L889,504L874,508L848,511L828,511L812,508L801,509L793,514L787,515L784,513L780,512L775,514L774,513L762,498L751,485L738,469L723,451L721,450L716,450L710,450L701,448L695,446L689,443L680,440L674,439L668,440L653,447L644,447L637,447L619,444L606,444L591,446L585,447L576,444L570,439L565,427L561,418L554,416L547,414L543,411L541,406L540,399L541,388L542,384L543,372L547,366L549,363L549,357L547,347L545,340L537,332L526,321L521,304L516,284L511,282L507,283L503,282L499,274L496,272L489,275L485,277L474,279L472,277L473,275L477,268L483,258L489,250L495,241L499,232L503,213L504,200L510,178L520,159L524,151L533,140L537,134L543,130L558,123L576,92L580,87L599,83L613,79L623,75L627,73L629,72L627,76L622,80L616,83L587,90L584,92L580,95L580,101L581,107L590,124L593,128L604,137L602,139L597,139L601,151L608,160L608,165L603,181L593,191L586,203L580,207L568,230L578,243L579,250L587,259L592,263L595,267L594,273L597,282L601,287L606,289L612,289L631,283L635,280L638,275L647,265L648,253L650,238L648,228L638,214L634,204L624,195L618,179L616,174L614,168L612,155L618,151L618,141L633,138L668,122L689,118L713,110L719,105L723,99L727,98L740,104L746,102L748,97L745,87L738,87L716,90L714,86L714,82L709,70L712,61L715,54L721,51L730,48L737,53L742,57L744,62L745,74L749,87L753,95L759,102L764,101L767,100L790,99L804,103L821,105L837,115L854,126L858,134L860,142L864,148L860,153L862,162L867,172L874,177L894,179L917,175L951,171L962,168L1020,167L1030,171L1031,176L1031,179L1050,196L1065,198L1078,203L1091,206L1105,210L1114,210L1120,208L1127,208L1178,180L1205,181L1209,179L1213,177L1203,172L1180,171L1173,174L1169,167L1177,167L1202,164L1231,166L1255,161L1267,160L1273,161L1292,158L1327,162L1355,158L1352,163L1343,166L1328,167L1317,173L1293,172L1276,175L1281,176L1281,183L1284,185L1286,185L1292,190L1293,193L1295,200L1293,208L1289,211L1296,210L1300,206L1300,203L1300,199L1304,200L1306,202L1315,222L1321,232L1323,232L1324,231L1326,229L1329,224L1332,228L1333,229L1334,229L1333,225L1335,219L1334,217L1337,217L1340,217L1345,219L1353,225L1359,232L1359,236L1361,238L1365,240L1367,244L1367,238L1365,234L1364,230L1375,230L1378,224L1384,227L1399,244L1405,246L1422,250L1433,257L1439,265L1435,272L1425,276L1421,280L1419,285L1419,290L1416,295L1416,297L1414,304L1409,313L1404,323L1375,323L1383,327L1389,330L1400,338L1408,332L1420,331L1434,325L1439,324L1463,327L1469,322L1474,321L1487,322L1499,327Z","Ecuador":"M324,993L320,996L316,996L309,997L301,994L298,994L298,997L303,1000L308,1004L310,1009L313,1016L321,1024L326,1027L326,1030L325,1035L324,1039L327,1058L325,1059L322,1059L319,1059L317,1057L315,1056L314,1059L312,1067L307,1086L302,1102L297,1108L289,1118L278,1130L262,1149L251,1157L242,1164L231,1172L217,1182L201,1187L180,1195L165,1201L153,1205L142,1209L126,1214L120,1219L110,1231L105,1237L101,1242L100,1245L101,1246L103,1249L103,1251L100,1253L98,1253L97,1252L96,1249L93,1246L90,1245L89,1246L89,1249L85,1261L85,1267L83,1270L83,1275L79,1280L77,1285L76,1289L73,1291L72,1295L69,1304L66,1311L63,1317L63,1322L64,1325L65,1327L64,1332L62,1336L58,1338L49,1344L46,1347L44,1352L45,1355L45,1358L40,1360L39,1362L36,1367L33,1368L24,1366L18,1366L13,1364L8,1357L3,1351L-0,1344L-1,1334L-6,1331L-11,1327L-16,1328L-23,1329L-26,1327L-36,1322L-43,1317L-49,1315L-54,1316L-56,1319L-61,1324L-68,1328L-71,1328L-75,1325L-76,1323L-73,1318L-66,1308L-73,1308L-76,1305L-77,1301L-78,1298L-76,1293L-72,1291L-66,1293L-62,1293L-59,1288L-56,1286L-53,1285L-52,1283L-55,1276L-56,1272L-55,1270L-55,1266L-55,1263L-57,1260L-57,1256L-59,1253L-59,1251L-59,1248L-61,1247L-64,1245L-62,1244L-51,1240L-46,1236L-41,1233L-36,1227L-33,1222L-25,1198L-18,1183L-19,1176L-25,1166L-26,1151L-26,1147L-26,1144L-30,1150L-29,1171L-33,1181L-37,1183L-41,1181L-39,1166L-42,1169L-48,1179L-58,1187L-58,1190L-60,1193L-68,1190L-73,1187L-91,1169L-103,1165L-110,1159L-112,1157L-113,1153L-105,1149L-98,1144L-97,1133L-97,1125L-103,1110L-100,1091L-101,1084L-108,1068L-103,1060L-87,1054L-81,1050L-77,1037L-73,1030L-66,1033L-60,1032L-68,1030L-75,1018L-75,1013L-63,997L-57,993L-49,985L-42,973L-40,953L-43,939L-45,924L-41,920L-31,918L-23,914L-19,909L-9,910L3,903L21,900L46,892L52,885L49,873L52,874L59,880L63,886L70,889L76,892L91,904L102,910L113,916L128,921L138,920L141,924L143,929L146,932L152,934L155,934L156,936L160,952L162,954L170,957L180,958L183,957L192,962L198,964L205,966L210,966L212,965L213,964L217,964L223,966L231,967L236,965L237,961L237,955L239,953L245,950L248,951L264,958L267,961L271,966L278,973L287,978L299,980L310,988L324,993ZM-49,1213L-50,1216L-57,1216L-59,1215L-59,1212L-58,1201L-56,1196L-50,1192L-45,1190L-38,1190L-31,1194L-39,1202L-44,1203L-46,1204L-49,1213ZM45,888L41,889L39,885L44,881L46,880L45,888Z","Peru":"M733,1310L733,1315L730,1317L727,1318L721,1314L717,1315L712,1315L706,1311L704,1307L700,1304L690,1305L682,1305L675,1305L669,1306L664,1310L660,1315L656,1319L643,1322L636,1322L629,1325L620,1326L614,1328L602,1330L589,1331L581,1335L578,1336L571,1342L557,1350L550,1353L541,1362L530,1370L523,1374L513,1377L509,1379L507,1381L508,1385L506,1393L503,1407L502,1415L502,1418L495,1430L488,1441L484,1448L482,1454L484,1458L487,1466L489,1473L490,1477L489,1482L486,1487L481,1489L475,1490L462,1498L447,1510L442,1516L440,1521L438,1529L439,1533L442,1536L444,1543L445,1547L442,1549L438,1549L434,1550L431,1552L429,1551L426,1552L426,1555L427,1559L426,1562L424,1564L423,1566L424,1568L427,1570L431,1573L437,1580L441,1581L445,1583L445,1587L444,1590L440,1592L440,1595L445,1599L447,1602L450,1606L453,1611L453,1615L456,1619L458,1623L458,1627L462,1630L467,1633L469,1635L472,1637L473,1640L473,1644L477,1650L485,1655L491,1663L494,1668L502,1676L502,1686L493,1697L484,1709L499,1708L514,1708L530,1712L541,1715L548,1716L552,1720L555,1725L557,1730L557,1737L564,1742L563,1747L563,1754L566,1754L586,1754L607,1754L628,1753L635,1751L645,1743L651,1740L656,1736L663,1728L668,1725L673,1721L679,1717L682,1714L684,1713L689,1711L687,1715L685,1719L685,1725L687,1731L685,1736L682,1740L682,1752L682,1768L682,1782L681,1799L681,1819L681,1832L685,1829L690,1827L696,1833L701,1835L704,1836L709,1836L714,1834L726,1829L734,1825L743,1826L756,1827L763,1827L773,1844L780,1856L788,1870L794,1881L804,1898L813,1913L822,1929L832,1946L829,1951L826,1954L826,1961L822,1964L818,1966L813,1971L809,1975L809,1982L810,2014L809,2023L806,2030L804,2034L802,2037L806,2045L810,2060L812,2063L816,2069L818,2075L817,2077L810,2080L807,2082L807,2091L804,2094L799,2098L795,2102L792,2106L790,2107L788,2113L786,2119L780,2123L779,2130L779,2136L782,2141L793,2154L794,2157L788,2164L784,2169L776,2185L775,2188L778,2195L791,2227L793,2229L797,2232L804,2232L814,2236L819,2239L820,2241L819,2243L813,2245L807,2249L805,2252L805,2257L806,2265L804,2267L797,2270L792,2275L787,2282L778,2292L775,2295L774,2299L769,2300L760,2308L758,2311L760,2315L764,2318L768,2322L768,2328L768,2331L763,2336L755,2342L746,2343L742,2346L743,2353L746,2361L746,2368L743,2376L737,2385L726,2391L717,2394L709,2394L702,2395L699,2396L693,2391L668,2373L658,2364L650,2360L628,2345L626,2340L623,2325L620,2320L613,2315L594,2308L587,2304L579,2297L568,2292L556,2283L549,2275L541,2270L516,2263L503,2255L480,2245L469,2239L444,2231L437,2227L412,2209L395,2203L380,2192L338,2170L331,2163L325,2152L316,2146L305,2131L289,2122L274,2110L269,2100L259,2086L256,2079L247,2072L246,2058L240,2051L245,2048L249,2046L255,2024L252,2013L236,1993L231,1983L226,1971L220,1964L211,1948L205,1935L193,1925L189,1921L187,1916L180,1912L180,1902L175,1882L169,1872L144,1853L143,1846L141,1832L136,1818L108,1774L101,1761L94,1739L88,1727L81,1705L71,1689L64,1675L57,1657L57,1647L44,1631L38,1616L26,1604L14,1594L9,1587L-7,1555L-9,1546L-20,1528L-31,1516L-38,1505L-47,1496L-101,1468L-120,1456L-126,1450L-129,1442L-128,1437L-123,1432L-115,1435L-110,1434L-106,1428L-106,1418L-111,1406L-128,1382L-127,1377L-124,1371L-130,1360L-138,1351L-141,1344L-137,1317L-133,1310L-107,1283L-100,1272L-89,1264L-77,1254L-64,1245L-61,1247L-59,1248L-59,1251L-59,1253L-57,1256L-57,1260L-55,1263L-55,1266L-55,1270L-56,1272L-55,1276L-52,1283L-53,1285L-56,1286L-59,1288L-62,1293L-66,1293L-72,1291L-76,1293L-78,1298L-77,1301L-76,1305L-73,1308L-66,1308L-73,1318L-76,1323L-75,1325L-71,1328L-68,1328L-61,1324L-56,1319L-54,1316L-49,1315L-43,1317L-36,1322L-26,1327L-23,1329L-16,1328L-11,1327L-6,1331L-1,1334L-0,1344L3,1351L8,1357L13,1364L18,1366L24,1366L33,1368L36,1367L39,1362L40,1360L45,1358L45,1355L44,1352L46,1347L49,1344L58,1338L62,1336L64,1332L65,1327L64,1325L63,1322L63,1317L66,1311L69,1304L72,1295L73,1291L76,1289L77,1285L79,1280L83,1275L83,1270L85,1267L85,1261L89,1249L89,1246L90,1245L93,1246L96,1249L97,1252L98,1253L100,1253L103,1251L103,1249L101,1246L100,1245L101,1242L105,1237L110,1231L120,1219L126,1214L142,1209L153,1205L165,1201L180,1195L201,1187L217,1182L231,1172L242,1164L251,1157L262,1149L278,1130L289,1118L297,1108L302,1102L307,1086L312,1067L314,1059L315,1056L317,1057L319,1059L322,1059L325,1059L327,1058L324,1039L325,1035L326,1030L326,1027L321,1024L313,1016L310,1009L308,1004L303,1000L298,997L298,994L301,994L309,997L316,996L320,996L324,993L329,988L332,988L336,988L342,994L346,997L350,999L355,1000L359,1000L361,1000L363,1003L365,1008L370,1010L376,1013L380,1018L383,1021L387,1024L391,1029L394,1038L396,1044L398,1047L397,1050L401,1056L404,1059L409,1061L419,1064L424,1069L429,1071L434,1077L438,1078L444,1078L449,1081L453,1086L456,1092L460,1096L462,1103L460,1111L462,1115L466,1118L473,1122L480,1121L483,1122L485,1125L486,1129L489,1139L490,1145L488,1150L487,1154L488,1160L495,1162L501,1165L504,1169L509,1170L514,1170L522,1169L526,1166L529,1166L532,1167L539,1169L547,1171L554,1170L560,1169L566,1168L573,1163L578,1164L582,1161L587,1156L592,1151L596,1150L602,1152L611,1156L616,1160L619,1161L623,1164L631,1164L639,1163L645,1157L652,1156L656,1154L660,1155L676,1165L681,1170L686,1171L691,1173L699,1176L703,1179L708,1181L712,1185L718,1188L723,1189L726,1192L726,1195L725,1196L719,1205L709,1222L699,1238L683,1262L674,1276L676,1276L690,1282L693,1282L698,1281L702,1278L705,1278L708,1280L712,1283L715,1292L718,1296L723,1299L729,1305L733,1310Z","Brazil":"M971,891L991,908L1005,921L1012,926L1015,927L1024,926L1034,924L1039,922L1044,918L1053,912L1060,909L1063,909L1066,910L1072,913L1075,920L1072,927L1073,932L1079,931L1084,924L1088,918L1095,913L1102,906L1107,899L1113,895L1122,891L1129,888L1136,888L1141,885L1147,879L1152,875L1155,873L1161,873L1169,873L1177,867L1183,860L1187,848L1190,838L1192,836L1194,834L1197,833L1204,833L1217,827L1225,822L1234,820L1236,819L1239,814L1241,805L1239,799L1224,797L1214,797L1198,796L1190,794L1189,792L1188,790L1190,786L1192,779L1189,769L1181,753L1175,738L1175,727L1175,716L1175,709L1171,703L1149,685L1141,676L1138,670L1129,659L1132,656L1137,656L1141,659L1145,665L1148,666L1152,666L1173,666L1177,667L1180,669L1183,672L1187,679L1191,682L1199,682L1212,682L1219,681L1223,683L1229,685L1240,681L1243,681L1247,683L1259,696L1266,701L1272,708L1280,708L1287,702L1289,682L1291,676L1295,674L1299,674L1304,670L1310,666L1314,665L1334,669L1340,667L1360,662L1380,655L1386,646L1395,644L1401,637L1407,638L1415,638L1420,637L1423,636L1426,633L1430,624L1436,621L1443,617L1448,613L1452,608L1453,604L1453,600L1451,594L1448,587L1445,585L1443,584L1450,583L1456,585L1465,586L1468,584L1474,585L1481,580L1486,582L1489,582L1492,585L1494,589L1501,594L1500,601L1499,607L1498,614L1498,620L1495,626L1490,631L1489,633L1489,636L1491,638L1496,638L1503,638L1507,640L1513,640L1520,645L1523,648L1523,650L1521,655L1520,660L1522,662L1524,665L1529,675L1532,679L1534,680L1535,682L1533,686L1530,691L1525,696L1525,700L1521,703L1511,709L1513,718L1513,723L1513,727L1510,732L1504,747L1502,755L1500,772L1501,778L1503,785L1509,803L1512,806L1519,810L1520,821L1519,834L1519,838L1520,840L1523,841L1525,843L1526,846L1526,850L1531,852L1536,854L1540,859L1548,867L1551,869L1553,872L1559,879L1569,881L1579,884L1583,889L1588,892L1591,892L1593,892L1598,889L1601,886L1607,886L1614,886L1616,884L1616,881L1615,874L1617,872L1624,871L1625,867L1626,865L1628,863L1630,862L1632,863L1636,864L1640,866L1643,868L1647,868L1651,868L1653,866L1654,863L1655,858L1658,858L1664,856L1669,854L1678,853L1685,854L1689,852L1692,848L1699,838L1702,835L1706,834L1710,834L1716,832L1722,830L1724,830L1728,836L1730,837L1733,837L1743,840L1749,839L1754,837L1760,837L1764,838L1767,836L1771,835L1773,836L1778,837L1790,840L1806,843L1810,842L1813,839L1814,833L1814,828L1811,823L1806,819L1802,813L1797,811L1798,808L1801,805L1804,803L1806,801L1808,793L1810,791L1811,791L1813,791L1816,793L1828,799L1834,799L1855,797L1858,793L1862,792L1870,789L1873,788L1876,789L1879,789L1884,785L1886,785L1887,789L1890,793L1894,796L1896,797L1903,796L1906,797L1907,800L1908,803L1911,806L1914,806L1916,807L1919,808L1922,812L1928,815L1939,819L1944,819L1949,820L1952,822L1955,819L1966,813L1971,809L1975,807L1977,804L1979,803L1981,805L1982,807L1986,808L1995,811L1999,811L2005,809L2010,806L2013,805L2016,808L2019,813L2021,815L2024,815L2032,815L2038,817L2041,817L2046,814L2048,810L2055,806L2062,803L2065,798L2070,790L2072,787L2073,781L2080,764L2083,761L2085,756L2088,750L2088,745L2090,740L2095,736L2098,733L2103,726L2106,719L2115,704L2116,700L2120,697L2121,694L2125,690L2129,687L2130,682L2133,677L2140,674L2142,672L2149,659L2150,653L2157,653L2167,660L2175,670L2186,702L2188,732L2193,748L2206,781L2206,787L2208,794L2213,802L2217,815L2217,817L2214,820L2219,821L2222,823L2225,831L2228,836L2234,844L2246,846L2255,847L2265,851L2273,857L2278,875L2277,887L2277,895L2274,898L2266,904L2264,907L2247,920L2243,927L2234,936L2224,952L2211,967L2206,971L2199,972L2195,975L2185,987L2170,991L2169,998L2161,1015L2154,1024L2150,1027L2138,1043L2137,1050L2137,1063L2129,1071L2121,1076L2120,1086L2117,1090L2114,1092L2098,1089L2073,1101L2064,1104L2092,1105L2100,1111L2119,1107L2142,1092L2151,1089L2169,1079L2177,1072L2190,1064L2193,1061L2200,1057L2204,1061L2205,1065L2199,1070L2200,1074L2204,1079L2206,1086L2206,1090L2209,1099L2217,1111L2217,1115L2216,1120L2220,1124L2224,1127L2238,1140L2249,1133L2256,1131L2260,1127L2269,1126L2277,1129L2291,1133L2301,1128L2322,1118L2316,1136L2311,1153L2307,1160L2304,1178L2300,1183L2297,1189L2302,1187L2306,1184L2311,1177L2315,1165L2330,1132L2334,1129L2347,1125L2368,1099L2377,1099L2382,1105L2388,1109L2389,1102L2396,1099L2388,1095L2387,1092L2386,1086L2392,1079L2388,1073L2399,1065L2399,1059L2403,1053L2407,1048L2413,1046L2414,1041L2418,1039L2421,1039L2426,1044L2432,1038L2438,1036L2440,1037L2444,1039L2447,1040L2450,1040L2457,1036L2464,1042L2468,1044L2467,1040L2465,1037L2466,1034L2469,1033L2479,1034L2484,1037L2490,1042L2498,1042L2504,1042L2508,1045L2515,1045L2518,1049L2527,1055L2529,1059L2537,1061L2545,1064L2552,1065L2560,1064L2560,1069L2566,1071L2573,1069L2579,1076L2594,1081L2604,1088L2611,1087L2619,1089L2627,1105L2628,1117L2632,1115L2635,1110L2640,1100L2648,1097L2652,1101L2660,1107L2667,1113L2670,1117L2675,1118L2671,1123L2675,1123L2681,1119L2685,1126L2689,1134L2689,1143L2686,1147L2683,1150L2680,1156L2676,1157L2673,1159L2677,1163L2680,1167L2686,1156L2691,1153L2697,1151L2701,1159L2701,1167L2691,1170L2691,1176L2687,1179L2686,1183L2684,1190L2682,1197L2675,1226L2675,1231L2683,1226L2697,1211L2702,1195L2707,1180L2713,1175L2717,1175L2723,1176L2723,1182L2722,1184L2716,1192L2713,1196L2716,1201L2730,1188L2736,1183L2741,1184L2752,1178L2773,1177L2774,1170L2779,1167L2790,1168L2813,1174L2821,1179L2833,1184L2839,1189L2866,1199L2885,1200L2894,1196L2906,1201L2912,1206L2925,1209L2937,1211L2947,1207L2971,1205L3002,1200L3020,1201L3041,1205L3056,1214L3069,1220L3076,1225L3088,1231L3114,1245L3123,1254L3139,1266L3156,1271L3165,1283L3172,1288L3188,1309L3208,1323L3221,1338L3246,1347L3256,1362L3273,1364L3280,1367L3289,1373L3301,1377L3316,1376L3334,1377L3348,1373L3381,1379L3386,1382L3393,1389L3405,1413L3412,1440L3416,1460L3424,1476L3429,1507L3432,1516L3433,1523L3436,1525L3438,1545L3437,1553L3434,1564L3434,1569L3434,1572L3433,1576L3432,1581L3436,1590L3436,1598L3432,1607L3426,1631L3411,1672L3397,1695L3377,1718L3364,1731L3359,1732L3355,1730L3358,1736L3355,1742L3342,1760L3329,1771L3316,1791L3314,1792L3297,1799L3287,1806L3274,1817L3262,1835L3260,1837L3255,1836L3255,1845L3245,1860L3242,1862L3242,1858L3244,1855L3245,1851L3244,1847L3242,1850L3235,1861L3237,1869L3233,1881L3216,1915L3196,1944L3191,1953L3174,1973L3161,1982L3158,1982L3154,1981L3152,1966L3142,1957L3139,1956L3135,1965L3132,1968L3127,1968L3132,1973L3134,1977L3128,1987L3128,1996L3119,2006L3113,2013L3110,2022L3108,2030L3113,2028L3115,2029L3116,2032L3115,2036L3112,2043L3113,2061L3112,2065L3115,2069L3118,2062L3120,2064L3111,2112L3114,2134L3116,2158L3120,2182L3124,2203L3124,2205L3118,2230L3111,2254L3106,2274L3103,2296L3100,2306L3099,2317L3102,2342L3103,2346L3094,2358L3084,2363L3078,2368L3065,2389L3059,2419L3058,2434L3062,2468L3059,2481L3055,2490L3051,2496L3038,2503L3028,2521L3023,2539L3015,2546L3014,2556L3008,2567L2993,2583L2983,2588L2978,2593L2975,2602L2965,2618L2958,2639L2960,2646L2960,2647L2962,2671L2962,2677L2952,2683L2917,2696L2907,2701L2886,2722L2885,2726L2886,2734L2889,2738L2885,2742L2881,2750L2875,2749L2840,2749L2821,2752L2811,2751L2807,2749L2802,2746L2800,2742L2803,2736L2801,2733L2796,2733L2790,2734L2789,2738L2789,2741L2792,2744L2793,2749L2790,2753L2779,2754L2767,2757L2751,2759L2739,2762L2733,2758L2739,2756L2747,2757L2756,2755L2754,2751L2741,2747L2727,2750L2719,2755L2702,2754L2682,2758L2678,2762L2679,2770L2683,2771L2687,2775L2683,2778L2679,2780L2658,2783L2637,2798L2629,2800L2621,2807L2620,2812L2618,2816L2613,2816L2603,2813L2589,2813L2579,2815L2529,2839L2510,2849L2489,2869L2455,2891L2436,2904L2433,2908L2430,2908L2424,2910L2426,2913L2430,2913L2429,2921L2421,2926L2407,2940L2404,2939L2409,2932L2402,2931L2392,2929L2388,2932L2390,2939L2386,2942L2380,2942L2373,2941L2367,2936L2370,2945L2384,2948L2390,2950L2392,2954L2381,2970L2372,2973L2371,2975L2376,2975L2379,2980L2375,2998L2371,3002L2368,3002L2365,3005L2369,3011L2373,3016L2372,3025L2371,3032L2371,3039L2376,3052L2377,3066L2379,3071L2380,3077L2377,3082L2379,3090L2374,3104L2376,3125L2375,3144L2373,3154L2370,3162L2362,3172L2362,3183L2344,3192L2325,3205L2308,3221L2289,3243L2267,3277L2246,3325L2222,3361L2212,3375L2198,3389L2181,3406L2157,3423L2131,3438L2121,3445L2112,3455L2110,3451L2112,3444L2111,3440L2111,3433L2116,3432L2124,3436L2128,3433L2131,3430L2140,3429L2158,3412L2171,3406L2179,3395L2180,3390L2180,3378L2184,3375L2194,3377L2196,3373L2195,3370L2197,3362L2210,3355L2216,3346L2214,3325L2216,3324L2222,3328L2224,3326L2227,3317L2226,3312L2219,3311L2198,3321L2190,3321L2189,3312L2178,3309L2174,3302L2173,3297L2169,3295L2170,3303L2171,3311L2180,3320L2178,3324L2173,3328L2170,3338L2170,3350L2168,3346L2165,3344L2163,3357L2157,3362L2155,3368L2157,3373L2153,3377L2137,3388L2121,3395L2118,3399L2116,3407L2113,3415L2106,3423L2100,3437L2101,3444L2103,3453L2106,3459L2101,3463L2094,3471L2089,3480L2076,3514L2065,3534L2057,3544L2044,3554L2010,3580L2008,3580L2003,3578L1998,3575L1998,3573L1997,3571L1998,3562L1998,3536L1999,3531L2001,3528L2008,3524L2015,3518L2022,3509L2029,3503L2026,3498L2021,3494L2011,3491L2001,3485L1992,3477L1988,3469L1985,3461L1981,3454L1980,3450L1977,3449L1971,3446L1968,3442L1963,3441L1954,3439L1944,3435L1933,3427L1925,3417L1921,3411L1916,3407L1893,3399L1882,3391L1878,3393L1871,3391L1865,3387L1863,3383L1861,3380L1858,3376L1856,3373L1850,3366L1842,3360L1838,3358L1836,3358L1835,3361L1833,3363L1830,3365L1826,3368L1822,3372L1817,3375L1811,3375L1807,3375L1807,3374L1806,3369L1808,3357L1804,3352L1800,3347L1794,3341L1776,3327L1752,3307L1744,3301L1736,3300L1728,3301L1722,3303L1716,3313L1714,3314L1701,3314L1688,3312L1684,3307L1687,3303L1700,3295L1706,3288L1708,3281L1714,3276L1724,3270L1735,3261L1748,3248L1756,3237L1759,3231L1764,3226L1771,3223L1777,3215L1783,3204L1790,3195L1800,3189L1805,3183L1806,3179L1809,3176L1813,3175L1815,3173L1815,3169L1816,3167L1818,3166L1823,3166L1828,3168L1832,3168L1833,3165L1831,3162L1827,3158L1829,3154L1840,3148L1848,3145L1853,3141L1858,3135L1866,3131L1877,3128L1880,3126L1879,3123L1882,3121L1888,3119L1892,3116L1892,3112L1894,3108L1898,3104L1902,3102L1906,3103L1910,3102L1914,3098L1919,3096L1924,3097L1927,3096L1936,3094L1941,3091L1946,3084L1949,3081L1953,3083L1959,3080L1967,3074L1968,3074L1974,3071L1980,3060L1983,3053L1982,3047L1980,3042L1981,3036L1983,3019L1984,3012L1987,3007L1987,3002L1981,2991L1975,2982L1972,2965L1970,2959L1965,2957L1961,2952L1955,2952L1952,2950L1950,2948L1946,2948L1942,2952L1936,2952L1932,2953L1927,2956L1923,2955L1920,2952L1914,2952L1915,2941L1925,2925L1928,2917L1927,2913L1930,2898L1938,2871L1940,2854L1937,2846L1937,2841L1941,2836L1943,2834L1933,2829L1928,2823L1921,2819L1913,2816L1910,2818L1906,2819L1899,2822L1890,2827L1886,2829L1878,2831L1870,2832L1862,2831L1856,2830L1853,2827L1851,2820L1851,2815L1849,2807L1845,2802L1843,2799L1843,2794L1843,2789L1845,2786L1844,2781L1842,2778L1843,2773L1841,2766L1838,2761L1837,2756L1837,2750L1835,2745L1834,2739L1836,2734L1837,2729L1835,2725L1830,2722L1827,2716L1827,2708L1823,2704L1819,2701L1815,2701L1808,2699L1802,2699L1793,2699L1789,2697L1786,2695L1781,2691L1777,2684L1773,2683L1768,2685L1765,2687L1763,2691L1759,2695L1754,2695L1748,2697L1743,2697L1736,2698L1728,2696L1720,2693L1712,2692L1705,2693L1700,2692L1694,2691L1687,2691L1681,2687L1675,2685L1672,2685L1668,2688L1663,2687L1657,2685L1655,2681L1655,2677L1657,2674L1659,2670L1658,2665L1658,2661L1659,2658L1660,2654L1660,2650L1659,2646L1659,2642L1658,2638L1661,2632L1664,2627L1662,2623L1663,2620L1664,2616L1667,2610L1667,2600L1664,2594L1662,2592L1661,2590L1663,2588L1661,2585L1661,2583L1662,2581L1660,2576L1657,2575L1655,2574L1654,2569L1653,2563L1654,2559L1652,2555L1649,2553L1647,2549L1644,2546L1643,2541L1642,2536L1647,2535L1649,2532L1652,2527L1657,2526L1663,2525L1664,2521L1651,2510L1644,2503L1648,2494L1656,2479L1663,2464L1669,2452L1671,2450L1676,2449L1675,2444L1674,2440L1671,2440L1675,2426L1682,2406L1687,2391L1688,2388L1692,2388L1693,2386L1688,2383L1686,2379L1680,2365L1671,2344L1670,2336L1667,2332L1661,2333L1655,2332L1638,2320L1627,2314L1624,2310L1622,2298L1619,2286L1617,2269L1618,2265L1627,2253L1627,2247L1628,2242L1627,2237L1625,2237L1621,2239L1616,2240L1612,2241L1580,2239L1543,2238L1513,2237L1486,2236L1486,2226L1484,2208L1483,2195L1481,2175L1471,2163L1459,2149L1455,2146L1469,2146L1479,2145L1477,2109L1474,2105L1471,2094L1470,2087L1465,2082L1463,2076L1464,2072L1467,2069L1469,2063L1468,2057L1465,2051L1461,2045L1454,2042L1444,2036L1430,2028L1417,2022L1413,2023L1391,2025L1384,2026L1379,2025L1362,2025L1356,2021L1350,2016L1339,2003L1337,1997L1333,1995L1326,1996L1319,1995L1306,1990L1293,1984L1287,1984L1282,1981L1272,1973L1268,1970L1266,1965L1264,1959L1260,1958L1255,1959L1250,1962L1242,1960L1233,1954L1228,1950L1224,1948L1216,1944L1209,1944L1197,1948L1188,1947L1173,1945L1160,1942L1155,1933L1153,1927L1145,1923L1139,1919L1132,1912L1128,1910L1122,1908L1116,1906L1115,1902L1113,1896L1113,1895L1108,1888L1106,1887L1104,1889L1103,1890L1101,1888L1101,1885L1102,1880L1100,1875L1094,1870L1091,1865L1090,1859L1089,1855L1087,1853L1085,1850L1085,1845L1087,1839L1090,1833L1090,1823L1084,1809L1082,1799L1081,1793L1082,1788L1085,1784L1091,1773L1092,1765L1090,1756L1090,1749L1092,1744L1089,1738L1085,1732L1082,1732L1077,1733L1072,1738L1066,1739L1061,1736L1044,1737L1018,1741L1008,1744L1002,1745L994,1746L982,1752L953,1775L947,1778L940,1778L936,1781L930,1784L917,1793L910,1800L906,1806L901,1807L897,1805L885,1806L879,1808L872,1814L864,1826L861,1829L854,1832L846,1835L837,1839L832,1839L829,1840L825,1838L824,1834L819,1832L808,1830L790,1827L772,1827L763,1827L756,1827L743,1826L734,1825L726,1829L714,1834L709,1836L704,1836L701,1835L696,1833L690,1827L685,1829L681,1832L681,1819L681,1799L682,1782L682,1768L682,1752L682,1740L685,1736L687,1731L685,1725L685,1719L687,1715L689,1711L684,1713L682,1714L679,1717L673,1721L668,1725L663,1728L656,1736L651,1740L645,1743L635,1751L628,1753L607,1754L586,1754L566,1754L563,1754L563,1747L564,1742L557,1737L557,1730L555,1725L552,1720L548,1716L541,1715L530,1712L514,1708L499,1708L484,1709L493,1697L502,1686L502,1676L494,1668L491,1663L485,1655L477,1650L473,1644L473,1640L472,1637L469,1635L467,1633L462,1630L458,1627L458,1623L456,1619L453,1615L453,1611L450,1606L447,1602L445,1599L440,1595L440,1592L444,1590L445,1587L445,1583L441,1581L437,1580L431,1573L427,1570L424,1568L423,1566L424,1564L426,1562L427,1559L426,1555L426,1552L429,1551L431,1552L434,1550L438,1549L442,1549L445,1547L444,1543L442,1536L439,1533L438,1529L440,1521L442,1516L447,1510L462,1498L475,1490L481,1489L486,1487L489,1482L490,1477L489,1473L487,1466L484,1458L482,1454L484,1448L488,1441L495,1430L502,1418L502,1415L503,1407L506,1393L508,1385L507,1381L509,1379L513,1377L523,1374L530,1370L541,1362L550,1353L557,1350L571,1342L578,1336L581,1335L589,1331L602,1330L614,1328L620,1326L629,1325L636,1322L643,1322L656,1319L660,1315L664,1310L669,1306L675,1305L682,1305L690,1305L700,1304L704,1307L706,1311L712,1315L717,1315L721,1314L727,1318L730,1317L733,1315L733,1310L735,1308L738,1292L742,1266L746,1243L751,1217L756,1190L761,1163L765,1140L769,1121L771,1109L774,1094L776,1080L777,1077L776,1073L773,1069L773,1067L774,1064L773,1061L770,1059L768,1057L766,1055L765,1052L763,1049L763,1046L761,1043L760,1040L761,1037L762,1034L761,1031L761,1027L759,1024L756,1022L750,1019L744,1014L737,1009L727,1000L725,995L725,983L726,970L726,950L727,940L732,940L737,939L742,939L746,938L750,936L752,935L756,933L759,934L761,932L764,931L767,930L771,928L775,931L778,933L780,934L782,934L784,934L786,936L788,936L791,936L794,936L796,935L796,934L795,932L794,930L795,927L795,923L795,918L793,916L791,911L788,906L784,904L780,903L777,904L774,905L771,903L768,903L764,903L760,902L753,903L750,902L746,902L742,903L742,884L742,866L742,853L746,853L751,851L758,851L763,848L766,848L771,849L777,852L783,852L798,852L814,852L832,852L851,852L866,852L871,852L868,848L865,843L866,838L868,834L870,832L875,834L879,842L882,847L886,850L890,850L894,849L899,847L907,837L915,828L919,825L923,822L926,822L931,822L935,824L937,828L946,843L952,854L955,860L955,877L954,891L955,893L956,894L971,891Z","Panama":"M164,319L162,320L158,326L156,331L161,336L163,342L166,349L170,355L176,367L177,371L176,374L170,376L166,382L164,389L165,392L151,403L147,404L145,403L142,397L138,393L136,392L135,391L134,392L133,395L135,405L133,409L129,412L123,429L121,426L102,404L86,377L83,365L87,364L91,364L93,362L96,359L94,350L102,344L105,340L107,340L112,347L119,351L128,358L134,359L127,353L115,344L111,339L108,331L103,334L101,337L98,339L96,337L96,334L89,334L87,332L85,330L85,335L87,338L86,342L84,342L82,338L79,335L76,321L68,314L64,312L61,311L56,307L50,304L42,298L32,293L20,291L5,292L-1,295L-4,298L-6,300L-15,304L-18,310L-20,314L-24,320L-19,323L-48,342L-54,345L-67,347L-70,349L-74,353L-74,358L-74,363L-70,367L-67,369L-59,381L-44,395L-42,400L-39,408L-44,411L-47,413L-60,413L-65,416L-67,421L-72,425L-90,429L-103,429L-108,425L-109,412L-118,391L-120,377L-123,379L-127,380L-129,384L-131,395L-132,398L-136,398L-144,394L-154,391L-167,368L-169,364L-171,359L-181,357L-190,353L-200,352L-204,354L-209,351L-210,345L-220,348L-233,347L-245,345L-252,346L-259,350L-258,362L-260,364L-260,359L-263,354L-265,349L-271,345L-271,343L-269,341L-258,334L-257,332L-257,326L-258,320L-263,312L-260,307L-255,303L-249,300L-248,299L-249,296L-253,293L-260,288L-265,288L-265,273L-265,258L-263,256L-261,255L-258,253L-257,248L-254,247L-248,250L-242,253L-239,252L-237,251L-236,249L-236,248L-231,252L-221,259L-220,263L-221,266L-218,276L-213,278L-208,276L-207,278L-208,279L-210,281L-211,290L-203,294L-198,297L-184,296L-179,297L-175,296L-179,289L-185,284L-184,281L-180,283L-177,287L-170,291L-157,306L-143,309L-131,309L-120,307L-103,301L-90,291L-80,286L-48,276L-37,266L-32,265L-27,263L-17,255L-12,249L-6,246L11,249L22,251L30,251L37,253L40,257L44,259L62,259L77,261L109,274L128,287L139,301L164,319ZM46,348L45,351L41,344L42,342L41,336L45,334L48,334L49,335L51,343L50,346L46,348ZM-162,420L-166,421L-175,418L-181,411L-181,409L-181,407L-178,401L-173,398L-172,398L-167,406L-170,409L-169,413L-163,417L-162,420ZM33,350L30,353L29,350L31,347L32,347L33,350Z","Antioquia":"M236,302L262,346L300,369L331,362L354,373L369,400L385,415L408,431L423,454L392,485L369,515L354,538L323,562L292,565L269,546L258,515L238,477L223,446L192,423L177,400L192,369L212,354L208,323Z"};
+
+/* ===================== NEXO · MOTOR ===================== */
+const ME = Math.random().toString(36).slice(2, 9);
+let R = {}; // espejo de la base de datos
+let MODE = 'conectando';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => Math.round(n || 0).toLocaleString('es-CO');
+const money = n => '$' + fmt(n);
+const mm = n => { n = n || 0; if (Math.abs(n) >= 1e9) return '$' + (n / 1e9).toFixed(2).replace('.', ',') + ' mil M'; if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(1).replace('.', ',') + ' M'; return money(n); };
+const hash = s => { let h = 2166136261; s = String(s); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return Math.abs(h); };
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const wpick = (arr, wk = 'w') => { const t = arr.reduce((s, x) => s + x[wk], 0); let r = Math.random() * t; for (const x of arr) { r -= x[wk]; if (r <= 0) return x; } return arr[0]; };
+
+/* ---------- tiempo (hora Colombia + hora simulada) ---------- */
+const offH = () => (R.cfg && R.cfg.offsetH) || 0;
+const vnow = () => Date.now() + offH() * 3600e3;
+const bog = t => { const d = new Date(t - 5 * 3600e3); return { h: d.getUTCHours(), m: d.getUTCMinutes(), s: d.getUTCSeconds(), dow: d.getUTCDay(), key: d.toISOString().slice(0, 10), date: d.getUTCDate() }; };
+const hourF = () => { const b = bog(vnow()); return b.h + b.m / 60; };
+const dayKey = off => bog(vnow() + off * 864e5).key;
+const DOW = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const dayLabel = off => off === 0 ? 'Hoy' : off === 1 ? 'Mañana' : (() => { const b = bog(vnow() + off * 864e5); return DOW[b.dow] + ' ' + b.date; })();
+const keyOff = key => { for (let o = 0; o < 30; o++) if (dayKey(o) === key) return o; return -1; };
+const hhmm = t => { const b = bog(t); return String(b.h).padStart(2, '0') + ':' + String(b.m).padStart(2, '0'); };
+const hhmmss = t => { const b = bog(t); return hhmm(t) + ':' + String(b.s).padStart(2, '0'); };
+
+/* ---------- capacidad ---------- */
+const LOADCURVE = [0.71, 0.55, 0.41, 0.32, 0.26, 0.2, 0.15, 0.12, 0.1, 0.08, 0.07, 0.06, 0.05, 0.05, 0.04];
+function baseCap(hub, off) { let c = CITIES[hub].cap; if (bog(vnow() + off * 864e5).dow === 0) c *= 0.25; return Math.round(c); }
+function baseLoad(hub, off) { const f = 0.9 + (hash(hub) % 18) / 100; return Math.round(baseCap(hub, off) * (LOADCURVE[off] || 0.04) * f); }
+const extCap = (hub, off) => Math.round((CITIES[hub].cap / 25) * FIN.accept * FIN.perRoute * (bog(vnow() + off * 864e5).dow === 0 ? 0.5 : 1));
+const orders = () => Object.values(R.orders || {}).filter(o => o && o.id);
+function booked(hub, key) {
+  const b = { own: 0, xtra: 0, ext: 0, ads: 0 };
+  for (const o of orders()) { if (o.hub !== hub || !o.alloc) continue; for (const a of o.alloc) if (a.day === key) { b.own += a.own || 0; b.xtra += a.xtra || 0; b.ext += a.ext || 0; b.ads += a.ads || 0; } }
+  return b;
+}
+function capDay(hub, off) {
+  const key = dayKey(off), b = booked(hub, key), cap = baseCap(hub, off), load = baseLoad(hub, off);
+  return { key, off, cap, load, own: b.own, xtra: b.xtra, ext: b.ext, ads: b.ads, xcap: Math.round(cap * 0.3), ecap: extCap(hub, off), freeOwn: Math.max(0, cap - load - b.own) };
+}
+function adsSpentMonth() { return orders().reduce((s, o) => s + ((o.ads && o.ads.spend) || 0), 0); }
+
+/* ---------- precio ---------- */
+function zoneOf(origin, dest) { if (hubOf(origin) === hubOf(dest)) return 'U'; if (depOf(origin) === depOf(dest)) return 'R'; return 'N'; }
+const ZN = { U: 'Urbana', R: 'Regional', N: 'Nacional' };
+function haversine(a, b) { const A = PLACE(a), B = PLACE(b); const r = Math.PI / 180, dLa = (B.lat - A.lat) * r, dLo = (B.lon - A.lon) * r; const x = Math.sin(dLa / 2) ** 2 + Math.cos(A.lat * r) * Math.cos(B.lat * r) * Math.sin(dLo / 2) ** 2; return 6371 * 2 * Math.asin(Math.sqrt(x)); }
+function linehaul(origin, hub, qty, kg) {
+  const oh = hubOf(origin); if (oh === hub) return null;
+  const km = Math.round(haversine(origin, hub) * 1.35), h = Math.round(km / 48 * 10) / 10;
+  const tons = qty * kg / 1000; const trucks = Math.max(1, Math.ceil(tons / 32), Math.ceil(qty / 3200));
+  const port = !!(CITIES[origin] && CITIES[origin].port); const cont = port ? Math.max(1, Math.ceil(tons / 24)) : 0;
+  const arr = hourF() + 3 + h + 2; let minOff = Math.floor(arr / 24); if (arr % 24 > RULES.ownCut) minOff++;
+  return { from: origin, km, h, trucks, tons: Math.round(tons * 10) / 10, cont, minOff };
+}
+
+/* ---------- COTIZADOR (el corazón de NEXO) ---------- */
+function quote(r, noSug) {
+  const hub = hubOf(r.dest), h = hourF(), lh = linehaul(r.origin, hub, r.qty, r.kg);
+  const minOff = lh ? lh.minOff : 0, notes = [];
+  let days = [];
+  if (r.flex === 'dates') days = (r.dates || []).map(keyOff).filter(o => o >= 0).sort((a, b) => a - b);
+  else for (let o = r.reqOff; o <= r.reqOff + (r.flex || 0); o++) days.push(o);
+  if (!days.length) days = [r.reqOff];
+  let left = r.qty; const alloc = []; let adsSpend = 0, adsHires = 0;
+  const fundLeft = FIN.fund - adsSpentMonth();
+  if (r.reqOff === 0) {
+    if (h >= 18 || h < RULES.open) notes.push(`🌙 Son las ${hhmm(vnow())}: fuera del horario operativo (6:00–20:00). Para hoy no es posible; lo más pronto es mañana desde las 7:00.`);
+    else if (h >= RULES.ownCut) notes.push(`⏰ Ya pasó el corte de flota propia de hoy (13:00). Para hoy solo queda: turno extendido (corte 16:00) o mensajeros externos (corte 16:30, se contratan en ${RULES.extLead}).`);
+  }
+  if (lh) notes.push(`🚛 Origen ${PLACE(r.origin).n} → ${CITIES[hub].n}: ${fmt(lh.km)} km, ~${lh.h} h de tránsito en ${lh.trucks} tractomula(s)${lh.cont ? ` · ${lh.cont} contenedor(es) desde puerto` : ''}. La mercancía llega a reparto ${dayLabel(lh.minOff).toLowerCase()}.`);
+  for (const o of days) {
+    if (left <= 0) break;
+    if (o < minOff) continue;
+    const c = capDay(hub, o), today = o === 0, a = { day: c.key, off: o, own: 0, xtra: 0, ext: 0, ads: 0 };
+    let f = c.freeOwn; if (today && (h >= RULES.ownCut || h >= 18)) f = 0;
+    a.own = Math.min(left, f); left -= a.own;
+    if (r.extra && left > 0) { let xf = Math.max(0, c.xcap - c.xtra); if (today && h >= RULES.xtraCut) xf = 0; a.xtra = Math.min(left, xf); left -= a.xtra; }
+    if (r.ext && left > 0) {
+      let ef = Math.max(0, c.ecap - c.ext); if (today && h > RULES.extCut) ef = 0; a.ext = Math.min(left, ef); left -= a.ext;
+      if (left > 0 && !(today && h > RULES.adsCut)) { // fondo de emergencia de publicidad
+        const per = Math.round(FIN.adsHires * 0.6 * FIN.perRoute); // paquetes por cada $1M
+        const maxM = Math.max(0, Math.min(4, Math.floor((fundLeft - adsSpend) / FIN.adsPer)));
+        const need = Math.min(maxM, Math.ceil(left / per));
+        if (need > 0) { const u = Math.min(left, need * per); a.ads = u; left -= u; adsSpend += need * FIN.adsPer; adsHires += need * FIN.adsHires; }
+      }
+    }
+    if (a.own + a.xtra + a.ext + a.ads > 0) alloc.push(a);
+  }
+  const assigned = r.qty - left;
+  // precio
+  const zone = zoneOf(r.origin, r.dest); let unit = FIN[zone] + Math.max(0, r.kg - 3) * FIN.kg;
+  const disc = r.qty >= 5000 ? 0.12 : r.qty >= 1000 ? 0.08 : r.qty >= 300 ? 0.04 : 0; unit = unit * (1 - disc);
+  let price = 0, cost = 0, routesExt = 0;
+  for (const a of alloc) {
+    const urg = a.off === 0 ? 1.12 : 1;
+    price += a.own * unit * urg + a.xtra * unit * urg * 1.18 + (a.ext + a.ads) * unit * urg * 1.2;
+    cost += a.own * unit * FIN.ownCost + a.xtra * unit * FIN.ownCost * FIN.xtraCost;
+    const rt = Math.ceil((a.ext + a.ads) / FIN.perRoute); routesExt += rt; cost += rt * FIN.route * (1 + FIN.platFee);
+  }
+  if (lh) cost += lh.km * FIN.kmTruck * Math.max(0.04, lh.tons / 32, r.qty / 3200) + lh.cont * 850000; // carga consolidada: paga su parte del camión
+  cost += adsSpend; price = Math.round(price); cost = Math.round(cost);
+  const q = { hub, zone, unit: Math.round(unit), disc, alloc, assigned, left, ok: left <= 0, lh, notes, price, cost, adsSpend, adsHires, routesExt, last: alloc.length ? alloc[alloc.length - 1] : null };
+  if (!q.ok && assigned < r.qty && h < RULES.ownCut && r.reqOff === 0 && !alloc.length && !lh) notes.push('📉 La capacidad propia de hoy ya está comprometida.');
+  if (!noSug && !q.ok) q.sug = suggest(r);
+  return q;
+}
+function suggest(r) {
+  const tries = [
+    { l: 'Turno extendido', p: { extra: true } }, { l: 'Mensajeros externos', p: { ext: true } }, { l: '+24 h de plazo', p: { flex: 1 } },
+    { l: '+48 h de plazo', p: { flex: 2 } }, { l: 'Turno extendido + externos', p: { extra: true, ext: true } },
+    { l: 'Externos + 48 h', p: { ext: true, flex: 2 } }, { l: 'Turno extendido + externos + 48 h', p: { extra: true, ext: true, flex: 2 } },
+    { l: '1 semana de plazo', p: { flex: 6 } }, { l: 'Todo: turno + externos + 1 semana', p: { extra: true, ext: true, flex: 6 } },
+  ];
+  const out = [];
+  for (const t of tries) { const rr = Object.assign({}, r, t.p); const q = quote(rr, true); out.push({ l: t.l, p: t.p, q }); }
+  const feas = out.filter(x => x.q.ok).sort((a, b) => (a.q.price - b.q.price) || ((a.q.last ? a.q.last.off : 99) - (b.q.last ? b.q.last.off : 99)));
+  const best = feas[0] || out.sort((a, b) => b.q.assigned - a.q.assigned)[0];
+  return { list: out, best };
+}
+
+/* ---------- flota y personal por orden ---------- */
+function fleetOf(o) {
+  let own = 0, ext = 0; for (const a of o.alloc || []) { own += (a.own || 0) + (a.xtra || 0); ext += (a.ext || 0) + (a.ads || 0); }
+  const big = o.qty > 300;
+  const nhr = big ? Math.ceil(own * 0.6 / 180) : 0, ev = Math.ceil(own * (big ? 0.3 : 0.6) / 120), moto = Math.ceil(own * (big ? 0.1 : 0.4) / 25);
+  const extR = Math.ceil(ext / FIN.perRoute);
+  return { nhr, ev, moto, extR, drivers: nhr + ev + moto, aux: nhr, ops: Math.max(1, Math.ceil(o.qty / 450)), own, ext };
+}
+function savedMin(o) { let m = 35 + 45 + 60 + 30; if (o.extR || (fleetOf(o).ext > 0)) m += 90; if (o.ads && o.ads.spend) m += 40; if (o.lh) m += 25; return m; }
+
+/* ---------- estado en el tiempo ---------- */
+function durs(o) { const k = o.src === 'star' ? 2.6 : o.src === 'human' ? 1.6 : 1; return BASE_DUR.map((d, i) => (i === 3 && !o.lh) ? 0 : d * k * 1000); }
+function stageOf(o, t) {
+  t = t || Date.now(); let el = t - o.ts; const d = durs(o);
+  for (let i = 0; i < d.length; i++) { if (el < d[i]) return { i, f: d[i] ? el / d[i] : 1 }; el -= d[i]; }
+  return { i: 6, f: 1 };
+}
+function stageStart(o, i) { const d = durs(o); let s = o.ts; for (let k = 0; k < i; k++) s += d[k]; return s; }
+
+/* ---------- pensamientos del cerebro ---------- */
+function thoughts(o) {
+  const L = [], f = fleetOf(o), hub = CITIES[o.hub], dest = PLACE(o.dest), at = (i, x) => stageStart(o, i) + x;
+  const tot = (o.alloc || []).map(a => `${a.off === 0 ? 'Hoy' : a.off === 1 ? 'Mañana' : a.day.slice(5)}: ${fmt(a.own + a.xtra + a.ext + a.ads)}`).join(' · ');
+  L.push({ t: at(0, 0), c: 1, x: `📥 ${o.asesor} registra venta: ${fmt(o.qty)} paq. · ${o.cliente} · ${PLACE(o.origin).n} → ${dest.n}` });
+  L.push({ t: at(0, 900), c: 1, x: `🔎 Consulto capacidad de ${hub.hub}: ${fmt(o.cap0 || 0)} libres para la fecha pedida` });
+  if (o.notes && o.notes[0]) L.push({ t: at(0, 1700), c: 3, x: '⏰ ' + o.notes[0].replace(/^[^ ]+ /, '') });
+  if (o.negot) L.push({ t: at(0, 2500), c: 3, x: `🤝 Negociación: ${o.negot}` });
+  L.push({ t: at(0, 3400), c: 2, x: `🧮 Plan de entrega → ${tot}` });
+  if (f.ext) L.push({ t: at(0, 4200), c: 3, x: `📨 Bolsa de externos: aviso por correo y WhatsApp a ${fmt(Math.ceil(f.extR / FIN.accept))} mensajeros registrados → ${f.extR} rutas (respuesta en ${RULES.extLead})` });
+  if (o.ads && o.ads.spend) L.push({ t: at(0, 4900), c: 5, x: `📣 Fondo de emergencia: campaña Meta Ads + Instagram + WhatsApp por ${money(o.ads.spend)} → ~${o.ads.hires} postulantes en ${RULES.adsLead}` });
+  L.push({ t: at(0, 5600), c: 4, x: `💰 Precio ${mm(o.price)} · costo ${mm(o.cost)} · margen ${Math.round((1 - o.cost / Math.max(1, o.price)) * 100)}% → reservado y enviado a Logística (0 llamadas, 0 correos)` });
+  L.push({ t: at(1, 500), c: 2, x: `📌 Cupo bloqueado en el calendario de ${hub.n}. Logística notificada automáticamente.` });
+  L.push({ t: at(2, 300), c: 1, x: `🏭 Recolección en ${PLACE(o.origin).n}: ${f.ops} operario(s) de bodega, etiquetas QR generadas (${fmt(o.qty)})` });
+  if (o.lh) {
+    L.push({ t: at(2, 3000), c: 2, x: `🚛 Asigno ${o.lh.trucks} tractomula(s)${o.lh.cont ? ` y ${o.lh.cont} contenedor(es) en puerto` : ''} · ${fmt(o.lh.km)} km · ${o.lh.tons} t` });
+    L.push({ t: at(3, 800), c: 1, x: `📡 GPS en vivo: ruta ${PLACE(o.origin).n} → ${hub.n}, ETA ${o.lh.h} h. Muelle reservado a la llegada.` });
+  }
+  L.push({ t: at(4, 400), c: 1, x: `📦 ${hub.hub}: clasificación por lectura QR, ${fmt(o.qty)} paquetes ordenados por zona` });
+  L.push({ t: at(5, 300), c: 2, x: `🗺️ Rutas optimizadas: ${f.nhr} furgones, ${f.ev} eléctricos, ${f.moto} motos${f.extR ? `, ${f.extR} rutas externas (cliente aceptó aliados)` : ''} · ${f.drivers + f.extR} conductores` });
+  L.push({ t: at(6, 0), c: 4, x: `🏁 Entregado a ${o.cliente} en ${dest.n}. Prueba de entrega digital + factura emitida. Ahorro: ${Math.round(savedMin(o) / 6) / 10} h humanas` });
+  return L.map(l => Object.assign(l, { id: o.id }));
+}
+
+/* ---------- construir una orden desde una cotización ---------- */
+function buildOrder(r, q, meta) {
+  const id = (meta.src === 'star' ? 'S' : meta.src === 'human' ? 'H' : 'A') + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const c0 = capDay(q.hub, Math.max(r.reqOff, q.lh ? q.lh.minOff : 0));
+  const o = {
+    id, ts: Date.now(), src: meta.src, asesor: meta.asesor, cliente: r.cliente, producto: r.producto, sector: r.sector || '', qty: q.assigned, qtyReq: r.qty, kg: r.kg,
+    origin: r.origin, dest: r.dest, hub: q.hub, zone: q.zone, alloc: q.alloc.map(a => ({ day: a.day, off: a.off, own: a.own, xtra: a.xtra, ext: a.ext, ads: a.ads })),
+    lh: q.lh, price: q.price, cost: q.cost, unit: q.unit, ads: q.adsSpend ? { spend: q.adsSpend, hires: q.adsHires } : null,
+    opts: { extra: !!r.extra, ext: !!r.ext, flex: r.flex }, notes: q.notes.slice(0, 2), negot: meta.negot || '', cap0: c0.freeOwn,
+  };
+  return o;
+}
+
+/* ===================== SINCRONIZACIÓN ===================== */
+function setAt(path, data, patch) {
+  const p = path.split('/').filter(Boolean);
+  if (patch) { for (const k in data) setAt(path.replace(/\/$/, '') + '/' + k, data[k]); return; }
+  if (!p.length) { R = (data && typeof data === 'object') ? data : {}; return; }
+  let o = R; for (let i = 0; i < p.length - 1; i++) { if (typeof o[p[i]] !== 'object' || o[p[i]] === null) o[p[i]] = {}; o = o[p[i]]; }
+  const last = p[p.length - 1]; if (data === null) delete o[last]; else o[last] = data;
+}
+let bc = null; try { bc = new BroadcastChannel('nexo'); bc.onmessage = e => setAt(e.data.path, e.data.data); } catch (e) { }
+let saveT = 0;
+function saveLocal() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem('nexo_db', JSON.stringify(R)); } catch (e) { } }, 800); }
+function dbPut(path, data) {
+  setAt(path, data);
+  if (MODE === 'live') fetch(FB + path + '.json', { method: 'PUT', body: JSON.stringify(data) }).catch(() => { });
+  else { if (bc) bc.postMessage({ path, data }); saveLocal(); }
+}
+function goLocal() { if (MODE === 'local') return; MODE = 'local'; try { const s = localStorage.getItem('nexo_db'); if (s) R = JSON.parse(s); } catch (e) { } }
+function connect() {
+  if (location.search.includes('demo=1') || !window.EventSource) { goLocal(); return; }
+  let got = false;
+  try {
+    const es = new EventSource(FB + '.json');
+    const to = setTimeout(() => { if (!got) { es.close(); goLocal(); } }, 7000);
+    es.addEventListener('put', e => { const m = JSON.parse(e.data); if (!got) { got = true; clearTimeout(to); MODE = 'live'; } setAt(m.path, m.data); });
+    es.addEventListener('patch', e => { const m = JSON.parse(e.data); setAt(m.path, m.data, true); });
+    es.onerror = () => { if (!got) { clearTimeout(to); es.close(); goLocal(); } };
+  } catch (e) { goLocal(); }
+}
+
+/* ===================== SIMULADOR (solo en el panel administrador anfitrión) ===================== */
+let isHost = false, simT = 0, b2cAcc = null;
+function hostTick() {
+  const h = (R.cfg && R.cfg.host) || null, motorOn = !(R.cfg && R.cfg.motor === false);
+  if (!motorOn) { isHost = false; return; }
+  if (!h || h.id === ME || Date.now() - h.ts > 12000) { isHost = true; dbPut('/cfg/host', { id: ME, ts: Date.now() }); } else isHost = false;
+}
+const DEST_W = [['MED', 13], ['m_ITA', 4], ['m_BEL', 3], ['m_ENV', 3], ['m_RIO', 2], ['m_SAB', 2], ['m_EST', 1], ['m_CAL', 1], ['m_COP', 1], ['m_MAR', 1], ['m_CEJ', 1], ['m_GIR', 1], ['m_SFA', 1], ['m_APA', 1], ['m_TUR', 1], ['m_CAU', 1], ['m_YAR', 1], ['m_AND', 1],
+  ['BOG', 22], ['CAL', 9], ['BAQ', 7], ['CTG', 4], ['BGA', 4], ['PEI', 3], ['MZL', 2], ['ARM', 2], ['CUC', 3], ['IBE', 2], ['VVC', 2], ['SMR', 2], ['MTR', 2], ['VUP', 1], ['NVA', 1], ['PPN', 1], ['PSO', 1]].map(([k, w]) => ({ k, w }));
+function simOrder(tsBack) {
+  const dest = wpick(DEST_W).k; let cl = pick(CLIENTES);
+  if (dest === 'm_ITA' && Math.random() < 0.6) cl = CLIENTES[0];
+  const origin = Math.random() < 0.55 ? (MUNIS[cl.o] && hubOf(cl.o) === hubOf(dest) ? cl.o : hubOf(dest)) : cl.o;
+  const r0 = Math.random(); const qty = r0 < 0.55 ? Math.round(rnd(12, 160)) : r0 < 0.88 ? Math.round(rnd(160, 700)) : Math.round(rnd(700, 2600));
+  const r = { cliente: cl.c, producto: cl.p, sector: cl.s, qty, kg: Math.round(rnd(1.5, 9) * 10) / 10, origin, dest, reqOff: Math.random() < 0.45 ? 0 : Math.random() < 0.7 ? 1 : 2, flex: pick([0, 0, 1, 2]), extra: false, ext: false };
+  let q = quote(r), negot = '';
+  if (!q.ok && q.sug && q.sug.best) { const best = q.sug.best; Object.assign(r, best.p); q = quote(r, true); negot = 'no cabía en la fecha pedida → cliente acepta: ' + best.l.toLowerCase(); }
+  if (!q.assigned) return null;
+  const o = buildOrder(r, q, { src: 'sim', asesor: pick(ASESORES), negot });
+  if (tsBack) o.ts = Date.now() - tsBack;
+  return o;
+}
+function simStep() {
+  if (!isHost) return;
+  const n = orders().length;
+  if (n < 8) { for (let i = 0; i < 22; i++) { const o = simOrder(Math.round(rnd(5000, 230000))); if (o) dbPut('/orders/' + o.id, o); } }
+  else { const o = simOrder(); if (o) dbPut('/orders/' + o.id, o); }
+  // B2C agregado
+  const cur = (R.b2c && R.b2c.day === dayKey(0)) ? R.b2c : { day: dayKey(0), c: {} };
+  const c = Object.assign({}, cur.c || {});
+  if (!Object.keys(c).length) PLATAFORMAS.forEach(p => c[p.k] = Math.round(p.w * rnd(48, 62) * Math.min(1, Math.max(0.25, (hourF() - 6) / 10))));
+  for (let i = 0; i < 4; i++) { const p = wpick(PLATAFORMAS); c[p.k] = (c[p.k] || 0) + Math.round(rnd(1, 9)); }
+  dbPut('/b2c', { day: dayKey(0), c, ts: Date.now() });
+}
+function scheduleSim() { clearTimeout(simT); simT = setTimeout(() => { try { simStep(); } catch (e) { console.warn(e); } scheduleSim(); }, rnd(4200, 7600)); }
+
+/* ---------- ORDEN ESTRELLA ---------- */
+function starOrder() {
+  const r = { cliente: 'Confecciones Itagüí Uniformes S.A.S. (contrato Gobernación de Antioquia)', producto: 'Telas importadas para uniformes escolares', sector: 'Textil / Gobierno', qty: 12500, kg: 6, origin: 'BUN', dest: 'm_ITA', reqOff: 1, flex: 0, extra: false, ext: false };
+  const q0 = quote(r);
+  const r2 = Object.assign({}, r, { extra: true, ext: true, flex: 2 });
+  const q = quote(r2, true);
+  const o = buildOrder(r2, q, { src: 'star', asesor: 'Santiago Ruiz Pimienta', negot: `pidió ${fmt(r.qty)} para mañana, solo cabían ${fmt(q0.assigned)} → cliente acepta turno extendido + mensajeros aliados + 48 h de plazo` });
+  o.cap0 = q0.assigned; o.qtyReq = r.qty;
+  dbPut('/orders/' + o.id, o);
+  return o;
+}
+
+/* ===================== NEXO · INTERFAZ ===================== */
+const $ = s => document.querySelector(s);
+const LOGO = (sz = 34) => `<svg class="mk" width="${sz}" height="${sz}" viewBox="0 0 40 40"><defs><linearGradient id="lg${sz}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset=".6" stop-color="#a78bfa"/><stop offset="1" stop-color="#f5b942"/></linearGradient></defs><path d="M20 2.5 35.5 11.2v17.6L20 37.5 4.5 28.8V11.2Z" fill="none" stroke="url(#lg${sz})" stroke-width="2.4"/><g stroke="url(#lg${sz})" stroke-width="1.6"><path d="M20 20 20 6M20 20 32 27M20 20 8 27M20 20 8 13M20 20 32 13"/></g><circle cx="20" cy="20" r="4.5" fill="url(#lg${sz})"/><circle cx="20" cy="6" r="2" fill="#22d3ee"/><circle cx="32" cy="27" r="2" fill="#f5b942"/><circle cx="8" cy="27" r="2" fill="#a78bfa"/><circle cx="8" cy="13" r="2" fill="#22d3ee"/><circle cx="32" cy="13" r="2" fill="#a78bfa"/></svg>`;
+let SES = null; try { SES = JSON.parse(localStorage.getItem('nexo_ses') || 'null'); } catch (e) { }
+let TAB = 'ord', LTAB = 'in', MODAL = null, MAPV = 'COL', ONLYH = false;
+const app = () => $('#app');
+function toast(t, ms = 3500) { const d = document.createElement('div'); d.className = 'toast'; d.innerHTML = t; document.body.appendChild(d); setTimeout(() => d.remove(), ms); }
+const presence = () => Object.values(R.presence || {}).filter(p => p && Date.now() - p.ts < 30000);
+const todayOrders = () => orders().filter(o => bog(o.ts).key === bog(Date.now()).key);
+
+/* ---------- LOGIN ---------- */
+function viewLogin(pre) {
+  app().innerHTML = `<div class="login">
+  <div class="hero-logo">${LOGO(96)}</div>
+  <h1>NEXO</h1>
+  <div class="tag">Inteligencia artificial que une <b class="acc">Comercial</b> y <b style="color:#f5b942">Logística</b> para TCC</div>
+  <div class="mut" style="font-size:13px">Vende solo lo que se puede entregar · Entrega todo lo que se vende</div>
+  <div class="who"><b>Santiago Ruiz Pimienta</b><br>Gestión del Talento Humano · Politécnico Jaime Isaza Cadavid</div>
+  <div class="roles">
+    <button class="role" data-r="com"><div class="ic">💼</div><b>Asesor Comercial</b><span>Registra ventas y negocia con datos reales de capacidad</span></button>
+    <button class="role" data-r="log"><div class="ic">🚚</div><b>Área Logística</b><span>Recibe órdenes ya planeadas: rutas, vehículos y personal</span></button>
+    <button class="role" data-r="adm"><div class="ic">🧠</div><b>Administrador</b><span>Mapa en vivo, cerebro IA, finanzas y control</span></button>
+  </div>
+  <div id="nb" class="namebox hidden card"></div>
+  <div class="facts"><span class="pill">📦 13,81 M paquetes/año</span><span class="pill">🚛 3.000+ vehículos</span><span class="pill">👥 hasta 4.500 colaboradores</span><span class="pill">⚡ ~100 eléctricos</span></div>
+  <div class="mut" style="margin-top:14px;font-size:11px">Datos públicos de TCC + simulación. Prototipo académico.</div></div>`;
+  document.querySelectorAll('.role').forEach(b => b.onclick = () => askName(b.dataset.r));
+  if (pre) askName(pre);
+}
+function askName(r) {
+  const nb = $('#nb'); nb.classList.remove('hidden');
+  const lbl = { com: 'Asesor Comercial', log: 'Área Logística', adm: 'Administrador' }[r];
+  const def = { com: 'Comercial ' + (1 + presence().filter(p => p.role === 'com').length), log: 'Logística ' + (1 + presence().filter(p => p.role === 'log').length), adm: 'Administrador' }[r];
+  nb.innerHTML = `<h3>Ingresar como ${lbl}</h3><label>Tu nombre (usuario)</label><input id="nm" value="${esc(def)}" maxlength="30"><div style="height:10px"></div><button class="btn" id="go" style="width:100%">Entrar →</button>`;
+  $('#nm').focus(); $('#nm').select();
+  const go = () => { SES = { role: r, name: ($('#nm').value || def).trim().slice(0, 30) }; localStorage.setItem('nexo_ses', JSON.stringify(SES)); route(); };
+  $('#go').onclick = go; $('#nm').onkeydown = e => { if (e.key === 'Enter') go(); };
+  nb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function logout() { SES = null; localStorage.removeItem('nexo_ses'); history.replaceState(null, '', location.pathname); route(); }
+
+/* ---------- TOPBAR ---------- */
+function topbar(extra = '') {
+  const lbl = { com: '💼 Comercial', log: '🚚 Logística', adm: '🧠 Administrador' }[SES.role];
+  return `<div class="top"><div class="logo">${LOGO(34)}NEXO</div><span class="pill">${lbl} · ${esc(SES.name)}</span>
+  <span class="pill" id="conn"></span>${extra}<div class="sp"></div>
+  <div style="text-align:right"><div class="clock mono" id="clk"></div><div class="mut" style="font-size:10px" id="clk2"></div></div>
+  <button class="btn2" onclick="logout()">Salir</button></div>`;
+}
+function tickTop() {
+  const c = $('#clk'); if (!c) return; c.textContent = hhmmss(vnow());
+  const h = hourF(); $('#clk2').textContent = (offH() ? '⏱ hora simulada · ' : '') + (h >= RULES.open && h < RULES.close ? 'Operación abierta' : 'Fuera de horario');
+  const n = presence().length;
+  $('#conn').innerHTML = MODE === 'live' ? `<i class="dot live"></i>EN VIVO · ${n} conectado${n === 1 ? '' : 's'}` : MODE === 'local' ? `<i class="dot" style="background:#fbbf24"></i>MODO DEMO` : `<i class="dot" style="background:#64748b"></i>Conectando…`;
+}
+
+/* ======================= COMERCIAL ======================= */
+let CF = { cliente: '', producto: '', qty: 1500, kg: 4, origin: 'MED', dest: 'm_ITA', reqOff: 0, flex: 0, dates: [], extra: false, ext: false }, LASTQ = null;
+function destOptions(sel) {
+  let s = '<optgroup label="Antioquia (municipios)">' + Object.entries(MUNIS).map(([k, m]) => `<option value="${k}" ${k === sel ? 'selected' : ''}>${m.n}</option>`).join('') + '</optgroup>';
+  s += '<optgroup label="Ciudades de Colombia">' + Object.entries(CITIES).filter(([k]) => k !== 'MED').map(([k, c]) => `<option value="${k}" ${k === sel ? 'selected' : ''}>${c.n}</option>`).join('') + '</optgroup>'; return s;
+}
+const origOptions = sel => Object.entries(CITIES).map(([k, c]) => `<option value="${k}" ${k === sel ? 'selected' : ''}>${c.port ? '⚓ Puerto de ' : ''}${c.n}</option>`).join('');
+function viewCom() {
+  app().innerHTML = topbar() + `<div class="wrap"><div class="grid2">
+  <div><div class="card"><h3>💼 Nueva venta</h3>
+    <div class="frm">
+      <div class="full"><label>Cliente</label><input id="f_cli" list="cl" placeholder="Ej: Confecciones Itagüí Uniformes" value="${esc(CF.cliente)}"><datalist id="cl">${CLIENTES.map(c => `<option value="${esc(c.c)}">`).join('')}</datalist></div>
+      <div class="full"><label>Producto / descripción</label><input id="f_pro" placeholder="Ej: Telas para uniformes escolares" value="${esc(CF.producto)}"></div>
+      <div><label>Cantidad de paquetes</label><input id="f_qty" type="number" min="1" value="${CF.qty}"></div>
+      <div><label>Peso promedio por paquete (kg)</label><input id="f_kg" type="number" min="0.2" step="0.1" value="${CF.kg}"></div>
+      <div><label>Origen (recolección)</label><select id="f_or">${origOptions(CF.origin)}</select></div>
+      <div><label>Destino (entrega)</label><select id="f_de">${destOptions(CF.dest)}</select></div>
+      <div class="full"><label>¿Para cuándo lo pide el cliente?</label><div class="chips" id="f_day">${[0, 1, 2, 3, 7].map(o => `<button class="chip ${CF.reqOff === o ? 'on' : ''}" data-o="${o}">${dayLabel(o)}</button>`).join('')}</div></div>
+    </div><div style="height:14px"></div>
+    <button class="btn" id="ask" style="width:100%;font-size:16px">⚡ Consultar a NEXO</button>
+  </div>
+  <div class="card" style="margin-top:12px"><h3>📋 Mis ventas</h3><div id="mine"></div></div></div>
+  <div><div class="card" id="res"><h3>🧠 Respuesta de NEXO</h3><div class="mut" style="padding:30px 0;text-align:center">Llena la venta y toca <b>Consultar a NEXO</b>.<br>NEXO revisa capacidad, horarios, flota, externos y precio en segundos.</div></div>
+  <div class="card" style="margin-top:12px"><h3>📊 Capacidad del destino · próximos días</h3><div id="capmini"></div></div></div>
+  </div></div>`;
+  const read = () => { CF.cliente = $('#f_cli').value.trim(); CF.producto = $('#f_pro').value.trim(); CF.qty = Math.max(1, Math.round(+$('#f_qty').value || 1)); CF.kg = Math.max(0.2, +$('#f_kg').value || 1); CF.origin = $('#f_or').value; CF.dest = $('#f_de').value; };
+  $('#f_cli').onchange = () => { const c = CLIENTES.find(x => x.c === $('#f_cli').value); if (c) { $('#f_pro').value = c.p; } };
+  document.querySelectorAll('#f_day .chip').forEach(b => b.onclick = () => { CF.reqOff = +b.dataset.o; document.querySelectorAll('#f_day .chip').forEach(x => x.classList.toggle('on', x === b)); });
+  $('#ask').onclick = () => { read(); if (!CF.cliente) { toast('Escribe el nombre del cliente'); return; } CF.flex = 0; CF.extra = false; CF.ext = false; CF.dates = []; thinkThen(renderQuote); };
+  ['f_or', 'f_de'].forEach(i => $('#' + i).onchange = () => { read(); renderCapMini(); });
+  renderCapMini(); renderMine();
+}
+function thinkThen(fn) {
+  const r = $('#res'); const steps = ['Leyendo la venta…', 'Consultando capacidad de bodegas…', 'Revisando horario operativo y flota…', 'Calculando externos, recargos y precio…'];
+  r.innerHTML = `<h3>🧠 Respuesta de NEXO</h3><div style="display:flex;gap:14px;align-items:center;padding:16px 0"><div class="orb"></div><div id="ths" class="mono" style="font-size:13px"></div></div>`;
+  let i = 0; const t = setInterval(() => { const el = $('#ths'); if (!el) return clearInterval(t); el.innerHTML += `<div>✓ ${steps[i]}</div>`; i++; if (i >= steps.length) { clearInterval(t); setTimeout(fn, 250); } }, 260);
+}
+function renderQuote() {
+  const r = Object.assign({}, CF); const q = quote(r); LASTQ = q;
+  const pct = Math.round(q.assigned / r.qty * 100);
+  const v = q.ok ? ['v-ok', '✅', `Sí se puede: ${fmt(r.qty)} paquetes`, `Entrega completa ${q.last ? dayLabel(q.last.off).toLowerCase() : ''}`] : q.assigned > 0 ? ['v-mid', '⚠️', `Capacidad parcial: ${fmt(q.assigned)} de ${fmt(r.qty)} (${pct}%)`, 'Negocia con el cliente las opciones de abajo'] : ['v-no', '⛔', 'No hay capacidad con estas condiciones', 'Mira la recomendación de NEXO'];
+  const flexOpts = [[0, 'Solo la fecha pedida'], [1, '+24 h'], [2, '+48 h'], [6, '1 semana'], ['dates', 'Días específicos']];
+  const best = q.sug && q.sug.best;
+  $('#res').innerHTML = `<h3>🧠 Respuesta de NEXO</h3>
+  <div class="verdict ${v[0]}"><div class="big">${v[1]}</div><div><b style="font-size:17px">${v[2]}</b><div class="mut">${v[3]}</div></div></div>
+  ${q.notes.map(n => `<div class="note">${esc(n)}</div>`).join('')}
+  ${q.alloc.length ? `<div style="margin:10px 0">${q.alloc.map(a => { const t = a.own + a.xtra + a.ext + a.ads; return `<div class="capday"><b>${dayLabel(a.off)}</b><div class="bar">${seg(a.own, t, 'f-own')}${seg(a.xtra, t, 'f-x')}${seg(a.ext, t, 'f-ext')}${seg(a.ads, t, 'f-ads')}</div><span class="mono">${fmt(t)} paq.</span></div>`; }).join('')}
+   <div class="legend" style="position:static;background:none;padding:4px 0"><span><i class="dot f-own"></i> Flota propia</span><span><i class="dot f-x"></i> Turno extendido</span><span><i class="dot f-ext"></i> Externos</span><span><i class="dot f-ads"></i> Contratados con fondo de publicidad</span></div></div>` : ''}
+  ${best && !q.ok ? `<div class="reco"><b>💡 Recomendación NEXO:</b> ${esc(best.l)} → ${best.q.ok ? 'entrega 100%' : 'entrega ' + fmt(best.q.assigned)} ${best.q.last ? 'hasta ' + dayLabel(best.q.last.off).toLowerCase() : ''} por ${mm(best.q.price)}. <button class="btn2" id="apply" style="margin-top:8px">Aplicar recomendación</button></div>` : ''}
+  <h3 style="margin-top:14px">🤝 ¿Qué acepta el cliente?</h3>
+  <label class="opt ${CF.extra ? 'on' : ''}"><input type="checkbox" id="o_x" ${CF.extra ? 'checked' : ''}><div><b>Recargo por turno extendido (+18%)</b><div class="mut" style="font-size:12px">Abre 30% más de capacidad propia hasta las 22:00. Corte el mismo día: 16:00.</div></div></label>
+  <label class="opt ${CF.ext ? 'on' : ''}"><input type="checkbox" id="o_e" ${CF.ext ? 'checked' : ''}><div><b>Entrega con mensajeros externos aliados (+20%)</b><div class="mut" style="font-size:12px">Se le informa al cliente que lo entrega un aliado certificado. NEXO los convoca por correo/WhatsApp (${RULES.extLead}) y, si faltan, activa el fondo de publicidad (${RULES.adsLead}).</div></div></label>
+  <label>Plazo que acepta el cliente</label><div class="chips" id="o_f">${flexOpts.map(([k, l]) => `<button class="chip ${String(CF.flex) === String(k) ? 'on' : ''}" data-k="${k}">${l}</button>`).join('')}</div>
+  ${CF.flex === 'dates' ? `<div class="chips" id="o_d" style="margin-top:8px">${Array.from({ length: 10 }, (_, o) => `<button class="chip ${CF.dates.includes(dayKey(o)) ? 'on' : ''}" data-d="${dayKey(o)}">${dayLabel(o)}</button>`).join('')}</div>` : ''}
+  <div class="price"><div><small>Precio total</small><b>${mm(q.price)}</b></div><div><small>Por paquete</small><b>${money(q.assigned ? q.price / q.assigned : 0)}</b></div><div><small>Zona · descuento</small><b>${ZN[q.zone]} ${q.disc ? '· -' + Math.round(q.disc * 100) + '%' : ''}</b></div></div>
+  <button class="btn" id="conf" style="width:100%;font-size:15px" ${q.assigned ? '' : 'disabled'}>✅ ${q.ok ? 'Confirmar con el cliente y reservar' : 'Reservar ' + fmt(q.assigned) + ' paquetes (parcial)'}</button>`;
+  $('#o_x').onchange = e => { CF.extra = e.target.checked; renderQuote(); };
+  $('#o_e').onchange = e => { CF.ext = e.target.checked; renderQuote(); };
+  document.querySelectorAll('#o_f .chip').forEach(b => b.onclick = () => { const k = b.dataset.k; CF.flex = k === 'dates' ? 'dates' : +k; if (CF.flex === 'dates' && !CF.dates.length) CF.dates = [dayKey(CF.reqOff)]; renderQuote(); });
+  document.querySelectorAll('#o_d .chip').forEach(b => b.onclick = () => { const d = b.dataset.d; CF.dates = CF.dates.includes(d) ? CF.dates.filter(x => x !== d) : CF.dates.concat(d); renderQuote(); });
+  if ($('#apply')) $('#apply').onclick = () => { Object.assign(CF, best.p); renderQuote(); };
+  $('#conf').onclick = () => {
+    const parts = []; if (CF.extra) parts.push('turno extendido'); if (CF.ext) parts.push('mensajeros aliados'); if (CF.flex) parts.push(CF.flex === 'dates' ? 'días específicos' : `+${CF.flex} día(s) de plazo`);
+    const o = buildOrder(Object.assign({}, CF, { producto: CF.producto || 'Mercancía general' }), q, { src: 'human', asesor: SES.name, negot: parts.length ? 'cliente acepta ' + parts.join(' + ') : 'cliente acepta la fecha propuesta' });
+    dbPut('/orders/' + o.id, o);
+    toast(`✅ Reservado: ${fmt(o.qty)} paquetes para ${esc(o.cliente)}. Logística ya lo tiene, sin llamadas ni correos.`, 4500);
+    CF.cliente = ''; CF.producto = ''; viewCom();
+  };
+}
+const seg = (v, t, c) => v ? `<i class="${c}" style="width:${v / t * 100}%"></i>` : '';
+function capRows(hub, n) {
+  let h = ''; for (let o = 0; o < n; o++) {
+    const c = capDay(hub, o), tot = c.cap + c.xcap + c.ecap, used = c.load + c.own;
+    const p = Math.round((c.load + c.own) / c.cap * 100), col = p >= 92 ? 'bad' : p >= 75 ? 'warn' : 'ok';
+    h += `<div class="capday"><b>${dayLabel(o)}</b><div class="bar"><i class="f-base" style="width:${c.load / tot * 100}%"></i><i class="f-own" style="width:${c.own / tot * 100}%"></i><i style="width:${Math.max(0, c.cap - used) / tot * 100}%;background:#ffffff18"></i><i class="f-x" style="width:${c.xtra / tot * 100}%"></i><i class="f-ext" style="width:${(c.ext + c.ads) / tot * 100}%"></i></div><span class="mono ${col}">${p}% · ${fmt(c.freeOwn)} libres</span></div>`;
+  }
+  return h + `<div class="legend" style="position:static;background:none;padding:4px 0"><span><i class="dot f-base"></i> Carga previa</span><span><i class="dot f-own"></i> Ventas NEXO</span><span><i class="dot" style="background:#ffffff30"></i> Libre</span><span><i class="dot f-x"></i> Turno ext.</span><span><i class="dot f-ext"></i> Externos</span></div>`;
+}
+function renderCapMini() { const el = $('#capmini'); if (!el) return; const hub = hubOf($('#f_de') ? $('#f_de').value : CF.dest); el.innerHTML = `<div class="mut" style="margin-bottom:6px">${CITIES[hub].hub} · capacidad base ${fmt(CITIES[hub].cap)} paq/día</div>` + capRows(hub, 7); }
+function renderMine() {
+  const el = $('#mine'); if (!el) return;
+  const m = orders().filter(o => o.src === 'human' && o.asesor === SES.name).sort((a, b) => b.ts - a.ts);
+  el.innerHTML = m.length ? m.map(o => { const s = stageOf(o); return `<div class="oc" onclick="openOrder('${o.id}')" style="cursor:pointer"><div class="row"><b>${esc(o.cliente)}</b><span class="st s${s.i}">${STAGE_IC[s.i]} ${STAGES[s.i]}</span></div><div class="mut" style="font-size:12px">${fmt(o.qty)} paq. · ${PLACE(o.origin).n} → ${PLACE(o.dest).n} · ${mm(o.price)}</div>${stepsBar(s)}</div>`; }).join('') : '<div class="mut">Aún no has registrado ventas.</div>';
+}
+const stepsBar = s => `<div class="steps">${STAGES.map((_, i) => `<i class="${i < s.i || s.i === 6 ? 'd' : i === s.i ? 'c' : ''}"></i>`).join('')}</div>`;
+
+/* ======================= LOGÍSTICA ======================= */
+function viewLog() {
+  app().innerHTML = topbar() + `<div class="wrap"><div class="kpis" id="lk"></div>
+  <div class="tabs">${[['in', '📥 Órdenes entrantes'], ['cap', '📊 Capacidad'], ['f1', '🔍 Fase 1 · Conteo QR']].map(([k, l]) => `<button class="tab ${LTAB === k ? 'on' : ''}" onclick="LTAB='${k}';viewLog()">${l}</button>`).join('')}</div><div id="lb"></div></div>`;
+  if (LTAB === 'f1') fase1($('#lb')); if (LTAB === 'cap') capTab($('#lb'));
+  renderLog();
+}
+function renderLog() {
+  const t = todayOrders(), act = orders().filter(o => stageOf(o).i < 6);
+  const ext = act.reduce((s, o) => s + fleetOf(o).extR, 0), veh = act.reduce((s, o) => { const f = fleetOf(o); return s + f.drivers; }, 0);
+  $('#lk').innerHTML = kpi('Órdenes hoy', fmt(t.length), 'recibidas automáticamente') + kpi('Paquetes hoy', fmt(t.reduce((s, o) => s + o.qty, 0)), 'planeados por NEXO') + kpi('Vehículos asignados', fmt(veh), 'propios en órdenes activas') + kpi('Rutas externas', fmt(ext), 'aliados convocados') + kpi('Llamadas evitadas', fmt(t.length * 4), 'comercial ↔ logística') + kpi('Horas ahorradas', fmt(t.reduce((s, o) => s + savedMin(o), 0) / 60), 'de coordinación hoy');
+  if (LTAB !== 'in') return;
+  const list = orders().filter(o => !ONLYH || o.src !== 'sim').sort((a, b) => b.ts - a.ts).slice(0, 24);
+  $('#lb').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px"><div class="mut">✨ No tienes que llamar a nadie: NEXO ya asignó vehículos, turnos, externos y rutas. Tú solo <b>recibes y ejecutas</b>.</div><button class="btn2" onclick="ONLYH=!ONLYH;renderLog()">${ONLYH ? 'Ver todas' : 'Solo ventas de compañeros'}</button></div>` +
+    list.map(o => {
+      const s = stageOf(o), f = fleetOf(o), ack = o.ack && o.ack.by;
+      return `<div class="oc"><div class="row"><div><b>${esc(o.cliente)}</b> ${o.src === 'star' ? '<span class="pill" style="background:#f59e0b33">⭐ ORDEN ESTRELLA</span>' : o.src === 'human' ? '<span class="pill" style="background:#22d3ee22">👤 compañero</span>' : ''}<div class="mut" style="font-size:12px">${esc(o.producto)} · vendió ${esc(o.asesor)} a las ${hhmm(o.ts)}</div></div><span class="st s${s.i}">${STAGE_IC[s.i]} ${STAGES[s.i]}</span></div>
+      ${stepsBar(s)}
+      <div class="auto"><span>📦 ${fmt(o.qty)} paq. · ${o.kg} kg c/u</span><span>📍 ${PLACE(o.origin).n} → ${PLACE(o.dest).n}</span>
+      <span>🗓️ ${(o.alloc || []).map(a => dayLabel(a.off) + ' ' + fmt(a.own + a.xtra + a.ext + a.ads)).join(' · ')}</span><span>🏭 ${esc(CITIES[o.hub].hub)} · ${f.ops} operario(s)</span>
+      <span>🚐 ${f.nhr} furgones · ⚡ ${f.ev} eléctricos · 🛵 ${f.moto} motos</span><span>${o.lh ? `🚛 ${o.lh.trucks} tractomula(s) · ${fmt(o.lh.km)} km` : '🏙️ Sin tramo nacional'}</span>
+      <span>${f.extR ? `🤝 ${f.extR} rutas externas (pago por ruta)` : '🤝 Sin externos'}</span><span>${o.ads ? `📣 Fondo publicidad: ${money(o.ads.spend)} → ${o.ads.hires} postulantes` : '📣 Sin campaña'}</span></div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn2" onclick="openOrder('${o.id}')">🧠 Ver cómo lo planeó NEXO</button>${ack ? `<span class="pill ok">✔ Recibido por ${esc(o.ack.by)}</span>` : `<button class="btn2" onclick="ackOrder('${o.id}')">✔ Recibido</button>`}</div></div>`;
+    }).join('');
+}
+function ackOrder(id) { dbPut('/orders/' + id + '/ack', { by: SES.name, ts: Date.now() }); renderLog(); }
+const kpi = (a, b, c) => `<div class="kpi"><small>${a}</small><b>${b}</b><i>${c}</i></div>`;
+function capTab(el) {
+  const sel = el.dataset.hub || 'MED';
+  el.innerHTML = `<div class="card"><h3>📊 Capacidad por bodega · 10 días</h3><select id="ch" style="max-width:340px;margin-bottom:10px">${Object.entries(CITIES).map(([k, c]) => `<option value="${k}" ${k === sel ? 'selected' : ''}>${c.hub}</option>`).join('')}</select><div id="cr"></div>
+  <div class="note" style="margin-top:10px">Horario: operación 6:00–20:00 · corte flota propia 13:00 · turno extendido hasta 16:00 · externos hasta 16:30 (se contratan en ${RULES.extLead}) · fondo de publicidad hasta 14:00 (${RULES.adsLead}). Domingos: 25% de capacidad.</div></div>`;
+  const draw = () => { $('#cr').innerHTML = capRows($('#ch').value, 10); }; $('#ch').onchange = () => { el.dataset.hub = $('#ch').value; draw(); }; draw(); el._draw = draw;
+}
+
+/* ---------- FASE 1: migración con conteo QR ---------- */
+let F1 = null;
+function fase1(el) {
+  const done = R.cfg && R.cfg.fase2;
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>🔍 Fase 1 · Migración sin parar la operación</h3>
+  <div class="note">1️⃣ Lectores QR en la bodega cuentan y etiquetan todo lo que hay (peso, destino, cliente, estante).<br>2️⃣ El sistema viejo sigue funcionando mientras tanto.<br>3️⃣ Cuando el conteo cuadra, NEXO activa la <b>Fase 2: operación en tiempo real</b>.</div>
+  <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><small>Escaneados</small><b id="f1c">0</b></div><div class="kpi"><small>Lectores QR</small><b>12</b></div><div class="kpi"><small>Velocidad</small><b id="f1v">0/min</b></div></div>
+  <div class="bar" style="height:14px"><i id="f1b" class="f-own" style="width:0%"></i></div><div class="laser"></div>
+  <button class="btn" id="f1s" style="width:100%">${done ? '✅ Fase 2 activa · repetir demostración' : '▶ Iniciar conteo de bodega (Hub Medellín)'}</button>
+  <div id="f1r" style="margin-top:10px"></div></div>
+  <div class="card"><h3>📡 Lecturas en vivo</h3><div class="scanbox" id="f1l"></div></div></div>`;
+  $('#f1s').onclick = () => runF1();
+}
+function qrMini(seed) { let s = ''; for (let i = 0; i < 25; i++) s += `<i class="${(hash(seed + i) % 3) ? '' : 'w'}"></i>`; return `<div class="qrmini">${s}</div>`; }
+function runF1() {
+  clearInterval(F1); const target = 18432, dests = Object.values(MUNIS).map(m => m.n); let n = 0; const t0 = Date.now();
+  F1 = setInterval(() => {
+    const c = $('#f1c'); if (!c) return clearInterval(F1);
+    n = Math.min(target, n + Math.round(rnd(330, 520))); c.textContent = fmt(n); $('#f1b').style.width = (n / target * 100) + '%';
+    $('#f1v').textContent = fmt(n / Math.max(1, (Date.now() - t0) / 60000) / 40) + '/min';
+    const l = $('#f1l'); const id = 'TCC-' + (7000000 + n); const d = document.createElement('div'); d.className = 'scan';
+    d.innerHTML = `${qrMini(id)}<div><b class="mono">${id}</b> · ${(rnd(0.4, 18)).toFixed(1)} kg · ${pick(dests)} · estante ${String.fromCharCode(65 + Math.floor(rnd(0, 8)))}-${Math.floor(rnd(1, 40))}<div class="mut">${pick(CLIENTES).c}</div></div>`;
+    l.prepend(d); while (l.children.length > 14) l.lastChild.remove();
+    if (n >= target) { clearInterval(F1); $('#f1r').innerHTML = `<div class="verdict v-ok"><div class="big">✅</div><div><b>Inventario migrado: ${fmt(target)} paquetes · 0 diferencias</b><div class="mut">Fase 2 activada: NEXO ya opera en tiempo real</div></div></div>`; dbPut('/cfg/fase2', true); toast('✅ Fase 2 activada: NEXO opera en tiempo real'); }
+  }, 120);
+}
+
+/* ======================= ADMINISTRADOR ======================= */
+function viewAdm() {
+  app().innerHTML = topbar(`<button class="btn-star" onclick="launchStar()">🚀 Orden estrella</button>`) + `<div class="wrap">
+  <div class="kpis" id="ak"></div>
+  <div class="grid2">
+   <div class="card mapcard"><div class="maphead"><button class="btn2" id="vCOL">🇨🇴 Colombia</button><button class="btn2" id="vANT">🔎 Antioquia</button><span class="pill" style="background:#070b14cc">${R.cfg && R.cfg.fase2 ? '🟢 Fase 2 · tiempo real' : '🟡 Fase 1 pendiente'}</span><span class="pill" style="background:#070b14cc">⏩ simulación acelerada</span></div>
+    <svg id="map" viewBox="20 0 980 1320" preserveAspectRatio="xMidYMid meet"></svg><div class="side-ant hidden" id="sant"></div>
+    <div class="legend"><span><i class="dot" style="background:#ff3b5c"></i> Venta comercial en curso</span><span>■ Bodega (color = ocupación hoy)</span><span><i class="dot" style="background:#22d3ee"></i> Tractomula en tránsito</span><span><i class="dot" style="background:#fbbf24"></i> Recolección</span><span><i class="dot" style="background:#34d399"></i> Reparto</span></div></div>
+   <div class="card brain"><div class="head"><div class="orb"></div><div><b style="font-size:17px">Cerebro NEXO</b><div class="mut" style="font-size:12px">Decisiones automáticas en tiempo real · toca una línea para abrir la orden</div></div></div><div class="feed" id="feed"></div></div>
+  </div>
+  <div class="tabs">${[['ord', '📋 Órdenes'], ['cap', '📊 Capacidad'], ['fin', '💰 Finanzas'], ['b2c', '🛒 B2C e-commerce'], ['ext', '🤝 Externos y fondo'], ['f1', '🔍 Fase 1 · Migración'], ['tcc', '📚 Datos TCC'], ['ctl', '⚙️ Control']].map(([k, l]) => `<button class="tab ${TAB === k ? 'on' : ''}" data-t="${k}">${l}</button>`).join('')}</div>
+  <div id="ab"></div></div>`;
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => { TAB = b.dataset.t; document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b)); drawTab(true); });
+  $('#vCOL').onclick = () => setMapView('COL'); $('#vANT').onclick = () => setMapView('ANT');
+  FEEDSEEN = new Set(); buildMap(); setMapView(MAPV, true); drawTab(true); renderAdm();
+}
+function renderAdm() {
+  const t = todayOrders(), act = orders().filter(o => stageOf(o).i < 6), c = capDay('MED', 0);
+  const pMed = Math.round((c.load + c.own) / c.cap * 100);
+  $('#ak').innerHTML = kpi('Ventas hoy', fmt(t.length), fmt(t.reduce((s, o) => s + o.qty, 0)) + ' paquetes') + kpi('Hub Medellín hoy', pMed + '%', 'capacidad propia usada') + kpi('Órdenes activas', fmt(act.length), 'en todo el país') + kpi('Rutas externas', fmt(act.reduce((s, o) => s + fmt0(fleetOf(o).extR), 0)), 'aliados en operación') + kpi('Ingreso bruto hoy', mm(t.reduce((s, o) => s + o.price, 0)), 'utilidad ' + mm(t.reduce((s, o) => s + o.price - o.cost, 0))) + kpi('Horas humanas ahorradas', fmt(t.reduce((s, o) => s + savedMin(o), 0) / 60), mm(t.reduce((s, o) => s + savedMin(o), 0) / 60 * FIN.coordH) + ' en coordinación');
+  drawMapDyn(); drawFeed(); drawTab(false);
+}
+const fmt0 = n => n || 0;
+
+/* ---------- MAPA ---------- */
+let VB = [20, 0, 980, 1320], VBT = null;
+const VIEWS = { COL: [20, 0, 980, 1320], ANT: [135, 285, 450, 330] };
+function buildMap() {
+  const s = $('#map');
+  let h = `<defs><filter id="gl"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  for (const n of ['Venezuela', 'Ecuador', 'Peru', 'Brazil', 'Panama']) h += `<path d="${GEO[n]}" fill="#0d1526" stroke="#1d2a44" stroke-width="1.2"/>`;
+  h += `<path d="${GEO.Colombia}" fill="#122039" stroke="#2f5a8a" stroke-width="2" filter="url(#gl)"/>`;
+  h += `<path id="antp" d="${GEO.Antioquia}" fill="#22d3ee0c" stroke="#22d3ee66" stroke-width="1.4" stroke-dasharray="5 4"/>`;
+  h += `<g id="mun"></g><g id="routes"></g><g id="hubs"></g><g id="dyn"></g>`;
+  s.innerHTML = h;
+}
+function setMapView(v, instant) {
+  MAPV = v; const to = VIEWS[v], from = VB.slice(), t0 = performance.now(), D = instant ? 1 : 900;
+  $('#sant').classList.toggle('hidden', v !== 'ANT');
+  cancelAnimationFrame(VBT);
+  const step = now => { const k = Math.min(1, (now - t0) / D), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; VB = from.map((x, i) => x + (to[i] - x) * e); $('#map').setAttribute('viewBox', VB.join(' ')); if (k < 1) VBT = requestAnimationFrame(step); else drawMapDyn(); };
+  VBT = requestAnimationFrame(step); drawMapDyn();
+}
+function jit(id, deg) { const a = hash(id) % 1000 / 1000 * Math.PI * 2, r = (hash(id + 'r') % 1000) / 1000 * deg; return [Math.cos(a) * r, Math.sin(a) * r]; }
+function placeXY(k, id, deg) { const p = PLACE(k); const [dx, dy] = id ? jit(id, deg) : [0, 0]; return P(p.lat + dy, p.lon + dx); }
+function drawMapDyn() {
+  const s = $('#map'); if (!s) return; const k = VB[2] / 980, ant = MAPV === 'ANT', now = Date.now();
+  // municipios
+  $('#mun').innerHTML = ant ? Object.entries(MUNIS).filter(([key]) => key !== 'm_MED' && key !== 'm_APA').map(([key, m]) => { const [x, y] = P(m.lat, m.lon); return `<circle cx="${x}" cy="${y}" r="${4 * k}" fill="#94a3b8"/><text x="${x + 6 * k}" y="${y - 4 * k}" font-size="${12 * k}" fill="#a8b6cc">${m.n}</text>`; }).join('') : '';
+  // bodegas
+  let hh = ''; for (const [key, c] of Object.entries(CITIES)) {
+    const [x, y] = P(c.lat, c.lon), d = capDay(key, 0), p = (d.load + d.own) / d.cap, col = p >= .92 ? '#f43f5e' : p >= .75 ? '#fbbf24' : '#34d399', sz = (10 + Math.sqrt(c.cap) / 9) * k * (ant ? 0.9 : 1);
+    hh += `<rect x="${x - sz / 2}" y="${y - sz / 2}" width="${sz}" height="${sz}" rx="${2 * k}" fill="${col}" fill-opacity=".85" stroke="#fff" stroke-width="${0.8 * k}"><title>${c.hub} · ${Math.round(p * 100)}% ocupado hoy · ${fmt(d.freeOwn)} libres</title></rect>`;
+    if (!ant || key === 'MED' || key === 'APO') hh += `<text x="${x + sz * 0.8}" y="${y + 4 * k}" font-size="${(ant ? 15 : 18) * k}" fill="#e2e8f0" font-weight="700">${c.n}${c.port ? ' ⚓' : ''}</text>`;
+  }
+  $('#hubs').innerHTML = hh;
+  // dinámico
+  let rt = '', dy = ''; const recent = orders().filter(o => now - o.ts < 9 * 60000);
+  for (const o of recent) {
+    const st = stageOf(o, now), deg = MUNIS[o.dest] ? 0.025 : 0.22, star = o.src === 'star', clk = `onclick="openOrder('${o.id}')" style="cursor:pointer"`;
+    if (st.i <= 1) { const [x, y] = placeXY(o.dest, o.id, deg); const r = (star ? 14 : o.src === 'human' ? 10 : 7) * k * (ant ? 1.5 : 1); dy += `<g ${clk}><circle cx="${x}" cy="${y}" r="${r}" fill="#ff3b5c" class="pulse"/><circle cx="${x}" cy="${y}" r="${r}" fill="#ff3b5c" stroke="#fff" stroke-width="${k}"><title>${esc(o.cliente)} · ${fmt(o.qty)} paq.</title></circle>${(o.src !== 'sim' || ant) ? `<text x="${x + r + 2 * k}" y="${y + 3 * k}" font-size="${(ant ? 13 : 15) * k}" fill="#fecdd3" font-weight="700">${esc(o.cliente.split(' ').slice(0, 3).join(' '))}</text>` : ''}</g>`; }
+    else if (st.i === 2) { const [x, y] = placeXY(o.origin, o.id, deg); dy += `<circle ${clk} cx="${x}" cy="${y}" r="${6 * k}" fill="#fbbf24"/>`; }
+    else if (st.i === 3 && o.lh) { const [x1, y1] = placeXY(o.origin), [x2, y2] = placeXY(o.hub); const x = x1 + (x2 - x1) * st.f, y = y1 + (y2 - y1) * st.f; rt += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${star ? '#f5b942' : '#22d3ee'}" stroke-opacity="${star ? .9 : .35}" stroke-width="${(star ? 3.5 : 1.5) * k}" stroke-dasharray="${6 * k} ${4 * k}"/>`; dy += `<g ${clk}><circle cx="${x}" cy="${y}" r="${(star ? 13 : 7) * k}" fill="${star ? '#f5b942' : '#22d3ee'}" stroke="#fff" stroke-width="${k}"/>${star ? `<text x="${x + 11 * k}" y="${y}" font-size="${13 * k}" fill="#fde68a" font-weight="800">🚛 ${o.lh.trucks} tractomulas</text>` : ''}</g>`; }
+    else if (st.i === 4) { const [x, y] = placeXY(o.hub, o.id, 0.06); dy += `<circle ${clk} cx="${x}" cy="${y}" r="${5.5 * k}" fill="#60a5fa"/>`; }
+    else if (st.i === 5) { for (let j = 0; j < (star ? 14 : 3); j++) { const [x, y] = placeXY(star && j % 2 ? pick(Object.keys(MUNIS).slice(0, 15)) : o.dest, o.id + j + Math.floor(now / 2000), MUNIS[o.dest] ? 0.05 : 0.3); dy += `<circle ${clk} cx="${x}" cy="${y}" r="${(star ? 5.5 : 4.5) * k}" fill="#34d399"/>`; } }
+  }
+  $('#routes').innerHTML = rt; $('#dyn').innerHTML = dy;
+  if (ant) drawAntSide(recent);
+}
+function drawAntSide(recent) {
+  const el = $('#sant'); const ao = recent.filter(o => depOf(o.dest) === 'ANT').sort((a, b) => b.ts - a.ts).slice(0, 18);
+  el.innerHTML = `<b>📍 Actividad en Antioquia ahora</b><div class="mut" style="margin:3px 0 6px">${ao.length} operaciones en curso</div>` + ao.map(o => { const s = stageOf(o); return `<div class="it" onclick="openOrder('${o.id}')"><b>${PLACE(o.dest).n}</b> · <span class="st s${s.i}">${STAGES[s.i]}</span><div>${esc(o.cliente)}</div><div class="mut">${esc(o.producto)} · ${fmt(o.qty)} paq.</div></div>`; }).join('');
+}
+
+/* ---------- FEED DEL CEREBRO ---------- */
+let FEEDSEEN = new Set();
+function drawFeed() {
+  const el = $('#feed'); if (!el) return; const now = Date.now();
+  const lines = []; for (const o of orders()) { if (now - o.ts > 10 * 60000) continue; for (const l of thoughts(o)) if (l.t <= now && now - l.t < 6 * 60000) lines.push(l); }
+  lines.sort((a, b) => a.t - b.t);
+  for (const l of lines) { const key = l.id + l.t; if (FEEDSEEN.has(key)) continue; FEEDSEEN.add(key); const d = document.createElement('div'); d.className = `ln c${l.c} click`; d.onclick = () => openOrder(l.id); d.innerHTML = `<span class="t mono">${hhmmss(l.t + offH() * 3600e3)}</span>${esc(l.x)}`; el.prepend(d); }
+  while (el.children.length > 40) el.lastChild.remove();
+}
+
+/* ---------- PESTAÑAS ADMIN ---------- */
+let TABT = 0;
+function drawTab(force) {
+  const el = $('#ab'); if (!el) return; if (!force && Date.now() - TABT < 2500) return; TABT = Date.now();
+  if (TAB === 'f1') { if (force) fase1(el); return; }
+  if (TAB === 'cap') { if (force || !el._draw) capTab(el); else el._draw(); return; }
+  if (TAB === 'ctl') { if (force) ctlTab(el); return; }
+  if (TAB === 'tcc') { if (force) tccTab(el); return; }
+  if (TAB === 'ord') return ordTab(el);
+  if (TAB === 'fin') return finTab(el);
+  if (TAB === 'b2c') return b2cTab(el);
+  if (TAB === 'ext') return extTab(el);
+}
+function ordTab(el) {
+  const list = orders().sort((a, b) => b.ts - a.ts).slice(0, 60);
+  el.innerHTML = `<div class="card" style="overflow:auto"><table><tr><th>Hora</th><th>Asesor</th><th>Cliente · producto</th><th>Paquetes</th><th>Ruta</th><th>Plan</th><th>Estado</th><th>Precio</th></tr>${list.map(o => { const s = stageOf(o), f = fleetOf(o); return `<tr class="click" onclick="openOrder('${o.id}')"><td class="mono">${hhmm(o.ts + offH() * 3600e3)}</td><td>${o.src === 'star' ? '⭐ ' : o.src === 'human' ? '👤 ' : ''}${esc(o.asesor)}</td><td><b>${esc(o.cliente)}</b><div class="mut" style="font-size:11px">${esc(o.producto)}</div></td><td class="mono">${fmt(o.qty)}</td><td>${PLACE(o.origin).n} → ${PLACE(o.dest).n}</td><td style="font-size:11px">${f.ext ? '🤝 ' : ''}${o.opts && o.opts.extra ? '🌙 ' : ''}${o.ads ? '📣 ' : ''}${o.lh ? '🚛 ' : ''}${(o.alloc || []).map(a => dayLabel(a.off)).join(', ')}</td><td><span class="st s${s.i}">${STAGE_IC[s.i]} ${STAGES[s.i]}</span></td><td class="mono">${mm(o.price)}</td></tr>`; }).join('')}</table></div>`;
+}
+function finTab(el) {
+  const t = todayOrders(); const S = k => t.reduce((s, o) => s + k(o), 0);
+  const ing = S(o => o.price), cost = S(o => o.cost), bruta = ing - cost, adm = ing * FIN.adm, neta = bruta - adm, hrs = S(o => savedMin(o)) / 60;
+  const by = { own: 0, xtra: 0, ext: 0, ads: 0 }; t.forEach(o => (o.alloc || []).forEach(a => { for (const k in by) by[k] += a[k] || 0; })); const tot = Object.values(by).reduce((a, b) => a + b, 0) || 1;
+  const hubs = {}; t.forEach(o => { const h = hubs[o.hub] = hubs[o.hub] || { n: 0, q: 0, p: 0, c: 0 }; h.n++; h.q += o.qty; h.p += o.price; h.c += o.cost; });
+  el.innerHTML = `<div class="kpis">${kpi('Ingreso bruto hoy', mm(ing), fmt(t.length) + ' órdenes')}${kpi('Costo directo', mm(cost), 'flota, externos, tractomulas, anuncios')}${kpi('Utilidad bruta', mm(bruta), Math.round(bruta / Math.max(1, ing) * 100) + '% margen')}${kpi('Gastos adm. (9%)', mm(adm), 'estimado')}${kpi('Utilidad neta', mm(neta), Math.round(neta / Math.max(1, ing) * 100) + '% margen neto')}${kpi('Ahorro coordinación', mm(hrs * FIN.coordH), fmt(hrs) + ' h humanas · ' + fmt(t.length * 6) + ' tareas')}</div>
+  <div class="grid2"><div class="card"><h3>📦 ¿Quién entrega los paquetes de hoy?</h3>${[['own', 'Flota propia', 'f-own'], ['xtra', 'Turno extendido', 'f-x'], ['ext', 'Mensajeros externos', 'f-ext'], ['ads', 'Contratados con fondo de publicidad', 'f-ads']].map(([k, l, c]) => `<div class="capday" style="grid-template-columns:200px 1fr 110px"><b>${l}</b><div class="bar"><i class="${c}" style="width:${by[k] / tot * 100}%"></i></div><span class="mono">${fmt(by[k])} · ${Math.round(by[k] / tot * 100)}%</span></div>`).join('')}
+  <h3 style="margin-top:16px">🤖 Tareas que NEXO automatiza por orden</h3><table><tr><th>Tarea</th><th>Antes (manual)</th><th>Con NEXO</th></tr><tr><td>Consultar capacidad a logística</td><td>35 min · llamadas</td><td>2 s</td></tr><tr><td>Negociar fechas con el cliente</td><td>45 min · correos</td><td>en la misma pantalla</td></tr><tr><td>Programar rutas</td><td>60 min</td><td>automático</td></tr><tr><td>Asignar vehículos y turnos</td><td>30 min</td><td>automático</td></tr><tr><td>Convocar externos</td><td>90 min · WhatsApp uno a uno</td><td>aviso masivo + pago por ruta</td></tr><tr><td>Publicar vacantes urgentes</td><td>40 min</td><td>fondo de emergencia</td></tr></table></div>
+  <div class="card"><h3>🏭 Resultado por bodega (hoy)</h3><table><tr><th>Bodega</th><th>Órdenes</th><th>Paquetes</th><th>Ingreso</th><th>Margen</th></tr>${Object.entries(hubs).sort((a, b) => b[1].p - a[1].p).map(([k, h]) => `<tr><td>${CITIES[k].n}</td><td>${h.n}</td><td class="mono">${fmt(h.q)}</td><td class="mono">${mm(h.p)}</td><td>${Math.round((1 - h.c / h.p) * 100)}%</td></tr>`).join('')}</table>
+  <h3 style="margin-top:16px">📐 Supuestos financieros <span class="est">ESTIMADOS</span></h3>${ESTIMADOS.map(e => `<div class="note">${e}</div>`).join('')}</div></div>`;
+}
+function b2cTab(el) {
+  const c = (R.b2c && R.b2c.c) || {}; const tot = Object.values(c).reduce((a, b) => a + b, 0);
+  const capB2C = Object.keys(CITIES).reduce((s, k) => s + baseCap(k, 0), 0) * 0.18, used = tot * 1.3, p = Math.round(used / capB2C * 100);
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>🛒 Pedidos B2C de hoy por plataforma</h3>${PLATAFORMAS.map(pl => `<div class="plat"><b>${pl.k}</b><div class="bar"><i style="width:${(c[pl.k] || 0) / Math.max(1, tot) * 100}%;background:${pl.c}"></i></div><span class="mono">${fmt(c[pl.k] || 0)}</span></div>`).join('')}<div class="note" style="margin-top:10px">Total hoy: <b>${fmt(tot)}</b> pedidos (~${fmt(used)} paquetes)</div></div>
+  <div class="card"><h3>📦 Capacidad reservada para e-commerce</h3><div class="kpis" style="grid-template-columns:1fr 1fr"><div class="kpi"><small>Reservado B2C hoy</small><b>${fmt(capB2C)}</b><i>18% de la última milla nacional</i></div><div class="kpi"><small>Usado</small><b class="${p > 90 ? 'bad' : p > 70 ? 'warn' : 'ok'}">${p}%</b><i>${fmt(used)} paquetes</i></div></div>
+  <div class="bar" style="height:14px"><i class="f-own" style="width:${Math.min(100, p)}%"></i></div>
+  <div class="note" style="margin-top:12px">NEXO separa una "bolsa" de capacidad para personas y tiendas en línea, así los picos de Temu, Mercado Libre o un Black Friday <b>no se comen la capacidad de los clientes empresariales</b>, y Comercial no vende algo que no se puede entregar.</div>
+  <div class="note">Si la bolsa B2C pasa del 90%, NEXO abre turno extendido nocturno de clasificación y convoca externos en motos.</div></div></div>`;
+}
+function extTab(el) {
+  const spent = adsSpentMonth(), camp = orders().filter(o => o.ads).sort((a, b) => b.ts - a.ts);
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>🤝 Bolsa de mensajeros externos por bodega · hoy</h3><table><tr><th>Bodega</th><th>Registrados</th><th>Capacidad</th><th>Usado</th><th></th></tr>${Object.entries(CITIES).map(([k, c]) => { const d = capDay(k, 0), u = d.ext + d.ads, p = Math.round(u / Math.max(1, d.ecap) * 100); return `<tr><td>${c.n}</td><td class="mono">${fmt(c.cap / 25)}</td><td class="mono">${fmt(d.ecap)}</td><td class="mono">${fmt(u)}</td><td style="width:30%"><div class="bar"><i class="f-ext" style="width:${Math.min(100, p)}%"></i></div></td></tr>`; }).join('')}</table>
+  <div class="note" style="margin-top:10px">📨 Canales: correo y WhatsApp Business a mensajeros que se registraron para recibir ofertas · pago por ruta (${money(FIN.route)} ≈ ${FIN.perRoute} paquetes) · respuesta en ${RULES.extLead} · el cliente siempre acepta antes que lo entregue un aliado.</div></div>
+  <div class="card"><h3>📣 Fondo de emergencia de publicidad</h3><div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><small>Presupuesto mes</small><b>${mm(FIN.fund)}</b></div><div class="kpi"><small>Usado</small><b class="warn">${mm(spent)}</b></div><div class="kpi"><small>Disponible</small><b class="ok">${mm(FIN.fund - spent)}</b></div></div>
+  <div class="bar" style="height:12px"><i class="f-ads" style="width:${Math.min(100, spent / FIN.fund * 100)}%"></i></div>
+  <div class="note" style="margin-top:10px">Cuando la bolsa de externos no alcanza, NEXO lanza anuncios en <b>Facebook, Instagram y WhatsApp</b> para contratar personal temporal (${RULES.adsLead}). Cada ${money(FIN.adsPer)} ≈ ${FIN.adsHires} postulantes. No se activa después de las 14:00 para entregas del mismo día.</div>
+  <table style="margin-top:8px"><tr><th>Hora</th><th>Cliente</th><th>Bodega</th><th>Inversión</th><th>Postulantes</th></tr>${camp.slice(0, 12).map(o => `<tr class="click" onclick="openOrder('${o.id}')"><td class="mono">${hhmm(o.ts + offH() * 3600e3)}</td><td>${esc(o.cliente)}</td><td>${CITIES[o.hub].n}</td><td class="mono">${money(o.ads.spend)}</td><td>${o.ads.hires}</td></tr>`).join('') || '<tr><td colspan="5" class="mut">Aún no se ha necesitado el fondo hoy.</td></tr>'}</table></div></div>`;
+}
+function tccTab(el) {
+  el.innerHTML = `<div class="card"><h3>📚 Datos reales y públicos de TCC</h3><div class="fgrid">${TCC_REAL.map(f => `<div class="fact"><b>${f.v}</b><div>${f.t}</div><div class="src" style="font-size:11px;margin-top:4px"><a href="${f.u}" target="_blank" rel="noopener">${f.s} ↗</a></div></div>`).join('')}</div>
+  <h3 style="margin-top:16px">📐 Lo que NEXO estima (no es público) <span class="est">ESTIMADO</span></h3>${ESTIMADOS.map(e => `<div class="note">${e}</div>`).join('')}
+  <h3 style="margin-top:16px">🎯 La brecha que resuelve NEXO</h3><div class="note">Comercial vende sin ver la capacidad real de Logística → se prometen fechas imposibles, o se dejan de vender cupos que sí existían. NEXO pone a los dos equipos a mirar <b>el mismo número, en el mismo segundo</b>, y automatiza la negociación, la programación y la contratación de capacidad extra.</div></div>`;
+}
+function ctlTab(el) {
+  const base = location.origin + location.pathname, motor = !(R.cfg && R.cfg.motor === false);
+  const qr = (r, l) => `<div><img alt="QR ${l}" src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=4&data=${encodeURIComponent(base + '?r=' + r)}"><div style="margin-top:6px"><b>${l}</b></div></div>`;
+  el.innerHTML = `<div class="grid2"><div class="card"><h3>📱 Que tus compañeros se unan</h3><div class="qr">${qr('com', '💼 Comercial')}${qr('log', '🚚 Logística')}${qr('adm', '🧠 Administrador')}</div><div class="note mono" style="margin-top:10px;word-break:break-all">${esc(base)}</div></div>
+  <div class="card"><h3>⚙️ Control de la simulación</h3>
+  <div class="note">Conexión: <b>${MODE === 'live' ? '🟢 En vivo (Firebase)' : '🟡 Modo demo local (sin internet)'}</b> · Motor en este equipo: <b>${isHost ? 'sí' : 'no'}</b></div>
+  <button class="btn2" id="c_m" style="width:100%;margin-bottom:8px">${motor ? '⏸ Pausar motor de simulación' : '▶ Activar motor de simulación'}</button>
+  <label style="margin-top:6px">Hora simulada (para mostrar reglas de horario)</label><div class="chips" id="c_h">${[['real', 'Hora real'], [9, '9:00 am'], [12.5, '12:30 pm'], [15, '3:00 pm'], [18.5, '6:30 pm']].map(([v, l]) => `<button class="chip" data-v="${v}">${l}</button>`).join('')}</div>
+  <div style="height:10px"></div><button class="btn-star" style="width:100%" onclick="launchStar()">🚀 Lanzar orden estrella (12.500 paquetes desde Buenaventura)</button>
+  <div style="height:10px"></div><button class="btn2" id="c_r" style="width:100%;border-color:#f43f5e66">🗑 Reiniciar todas las órdenes</button></div></div>`;
+  $('#c_m').onclick = () => { dbPut('/cfg/motor', !motor); setTimeout(() => ctlTab(el), 300); };
+  document.querySelectorAll('#c_h .chip').forEach(b => b.onclick = () => { const v = b.dataset.v; const real = (() => { const x = bog(Date.now()); return x.h + x.m / 60; })(); dbPut('/cfg/offsetH', v === 'real' ? 0 : Math.round((+v - real) * 100) / 100); toast('⏱ Hora simulada: ' + b.textContent); });
+  $('#c_r').onclick = () => { if (confirm('¿Borrar todas las órdenes?')) { dbPut('/orders', null); dbPut('/b2c', null); dbPut('/cfg/fase2', null); FEEDSEEN = new Set(); $('#feed').innerHTML = ''; toast('Órdenes reiniciadas'); } };
+}
+function launchStar() { const o = starOrder(); toast('🚀 Comercial acaba de cerrar una venta de 12.500 paquetes. Mira cómo NEXO la ejecuta…', 5000); setTimeout(() => openOrder(o.id), 600); }
+
+/* ---------- MODAL DETALLE DE ORDEN ---------- */
+function openOrder(id) { MODAL = id; renderModal(true); }
+function closeModal() { MODAL = null; const m = $('#modal'); if (m) m.remove(); }
+function renderModal(first) {
+  const o = (R.orders || {})[MODAL]; if (!o) return closeModal();
+  let m = $('#modal'); if (!m) { m = document.createElement('div'); m.id = 'modal'; m.className = 'modal'; m.onclick = e => { if (e.target === m) closeModal(); }; document.body.appendChild(m); m.innerHTML = '<div class="mbox" id="mb"></div>'; }
+  const now = Date.now(), s = stageOf(o, now), f = fleetOf(o), L = thoughts(o).filter(l => l.t <= now);
+  const pipeNames = ['Comercial', 'NEXO reserva', 'Bodega origen', o.lh ? (o.lh.cont ? 'Puerto → tractomulas' : 'Tractomulas') : 'Tránsito urbano', 'Hub ' + CITIES[o.hub].n, 'Reparto', 'Cliente'];
+  const margin = Math.round((1 - o.cost / Math.max(1, o.price)) * 100);
+  const html = `<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div>${o.src === 'star' ? '<span class="pill" style="background:#f59e0b33">⭐ ORDEN ESTRELLA</span> ' : ''}<span class="pill mono">${o.id}</span><h2 style="margin-top:6px">${esc(o.cliente)}</h2><div class="mut">${esc(o.producto)} · ${fmt(o.qty)} paquetes${o.qtyReq && o.qtyReq !== o.qty ? ` (pidió ${fmt(o.qtyReq)})` : ''} · ${o.kg} kg c/u · ${PLACE(o.origin).n} → ${PLACE(o.dest).n} · vendió <b>${esc(o.asesor)}</b></div></div><button class="btn2" onclick="closeModal()">✕ Cerrar</button></div>
+  <div class="pipe">${pipeNames.map((n, i) => `<div class="${i < s.i || s.i === 6 ? 'd' : i === s.i ? 'c' : ''}"><b>${STAGE_IC[i]}</b>${n}</div>`).join('')}</div>
+  <div class="mgrid"><div class="card"><h3><span class="orb" style="width:26px;height:26px"></span> Así piensa NEXO</h3><div style="display:flex;flex-direction:column;gap:6px;max-height:430px;overflow:auto" id="mlog">${L.map((l, i) => `<div class="ln c${l.c} ${i === L.length - 1 && now - l.t < 2500 ? 'typing' : ''}"><span class="t mono">${hhmmss(l.t + offH() * 3600e3)}</span>${esc(l.x)}</div>`).join('')}${s.i < 6 ? '<div class="mut typing" style="font-size:12px;padding:4px 8px">procesando</div>' : ''}</div></div>
+  <div><div class="card"><h3>🗓️ Plan de entrega reservado</h3>${(o.alloc || []).map(a => { const t = a.own + a.xtra + a.ext + a.ads; return `<div class="capday"><b>${dayLabel(a.off)}</b><div class="bar">${seg(a.own, t, 'f-own')}${seg(a.xtra, t, 'f-x')}${seg(a.ext, t, 'f-ext')}${seg(a.ads, t, 'f-ads')}</div><span class="mono">${fmt(t)}</span></div>`; }).join('')}
+   ${o.negot ? `<div class="note">🤝 ${esc(o.negot)}</div>` : ''}
+   <div class="auto" style="margin-top:8px"><span>🚐 ${f.nhr} furgones NHR</span><span>⚡ ${f.ev} eléctricos</span><span>🛵 ${f.moto} motos</span><span>🤝 ${f.extR} rutas externas</span><span>👷 ${f.ops} operarios de bodega</span><span>🧑‍✈️ ${f.drivers + f.extR} conductores</span>${o.lh ? `<span>🚛 ${o.lh.trucks} tractomulas · ${o.lh.tons} t</span><span>🛣️ ${fmt(o.lh.km)} km · ${o.lh.h} h</span>${o.lh.cont ? `<span>📦 ${o.lh.cont} contenedores</span>` : ''}` : ''}${o.ads ? `<span>📣 ${money(o.ads.spend)} en anuncios</span><span>🙋 ~${o.ads.hires} postulantes</span>` : ''}</div></div>
+  <div class="card" style="margin-top:12px"><h3>💰 Finanzas de la orden</h3><div class="price"><div><small>Precio al cliente</small><b>${mm(o.price)}</b></div><div><small>Costo directo</small><b>${mm(o.cost)}</b></div><div><small>Margen</small><b class="${margin > 20 ? 'ok' : 'warn'}">${margin}%</b></div><div><small>Por paquete</small><b>${money(o.price / Math.max(1, o.qty))}</b></div><div><small>Utilidad neta</small><b>${mm(o.price - o.cost - o.price * FIN.adm)}</b></div><div><small>Horas humanas ahorradas</small><b>${Math.round(savedMin(o) / 6) / 10} h</b></div></div></div></div></div>`;
+  $('#mb').innerHTML = html; const ml = $('#mlog'); if (ml) ml.scrollTop = ml.scrollHeight;
+}
+
+/* ---------- RUTEO Y LOOP ---------- */
+function route() {
+  closeModal();
+  const pre = new URLSearchParams(location.search).get('r');
+  if (!SES) return viewLogin(pre && ['com', 'log', 'adm'].includes(pre) ? pre : null);
+  if (SES.role === 'com') viewCom(); else if (SES.role === 'log') viewLog(); else viewAdm();
+  tickTop();
+}
+let lastPres = 0;
+function loop() {
+  try {
+    tickTop();
+    if (SES) {
+      if (Date.now() - lastPres > 10000) { lastPres = Date.now(); dbPut('/presence/' + ME, { role: SES.role, name: SES.name, ts: Date.now() }); }
+      if (SES.role === 'adm') renderAdm();
+      if (SES.role === 'log') { if (LTAB === 'in' || LTAB === 'cap') { renderLog(); if (LTAB === 'cap' && $('#lb')._draw && Date.now() % 4000 < 1000) $('#lb')._draw(); } }
+      if (SES.role === 'com') { renderMine(); if (Date.now() % 5000 < 1000) renderCapMini(); }
+      if (MODAL) renderModal();
+    }
+  } catch (e) { console.warn(e); }
+}
+let hostT = 0;
+function boot() {
+  connect(); route();
+  setInterval(loop, 1000);
+  setInterval(() => { if (SES && SES.role === 'adm' && MODE !== 'conectando') { const was = isHost; hostTick(); if (isHost && !was) { try { simStep(); } catch (e) { } scheduleSim(); } if (!isHost) clearTimeout(simT); } }, 4000);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+}
+window.addEventListener('load', boot);
+
+</script></body></html>
